@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Trends - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand, .nav-link {
+            color: #333 !important;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .location-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .location-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .location-card.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-home me-2"></i>Real Estate AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/predict">Predict Price</a>
+                <a class="nav-link active" href="/trends">Market Trends</a>
+                <a class="nav-link" href="/history">History</a>
+                <a class="nav-link" href="/about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">📈 Market Trends Analysis</h1>
+                <p class="lead text-muted">Explore property price trends across different locations in Bangalore</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Location Selector -->
+            <div class="col-lg-3">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        Select Location
+                    </h5>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="locationSearch"
+                               placeholder="Search locations..." autocomplete="off"
+                               list="trendsLocationDatalist">
+                        <datalist id="trendsLocationDatalist">
+                            {% for location in locations %}
+                            <option value="{{ location }}">{{ location }}</option>
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div id="locationList" style="max-height: 400px; overflow-y: auto;">
+                        {% for location in locations %}
+                        <div class="location-card" data-location="{{ location }}" onclick="selectTrendLocation('{{ location }}')">
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ location }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Analysis -->
+            <div class="col-lg-9">
+                <!-- Market Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgPrice">₹112.5L</div>
+                        <div class="text-muted">Average Price</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="priceGrowth">+12.5%</div>
+                        <div class="text-muted">YoY Growth</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalProperties">13.2K</div>
+                        <div class="text-muted">Properties</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pricePerSqft">₹8,200</div>
+                        <div class="text-muted">Price/Sqft</div>
+                    </div>
+                </div>
+
+                <!-- Price Trend Chart -->
+                <div class="chart-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line text-primary me-2"></i>
+                            Price Trend: <span id="selectedLocation">Select a location</span>
+                        </h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="changeTimeframe('1Y')">1Y</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm active" onclick="changeTimeframe('3Y')">3Y</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="changeTimeframe('5Y')">5Y</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="changeTimeframe('ALL')">ALL</button>
+                        </div>
+                    </div>
+                    
+                    <div class="loading-spinner" id="chartLoading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading trend data...</p>
+                    </div>
+                    
+                    <canvas id="trendChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Market Insights -->
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Market Insights
+                    </h5>
+                    <div id="marketInsights">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Select a location to view detailed market insights and price trends.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Chart -->
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-balance-scale text-success me-2"></i>
+                        Location Comparison
+                    </h5>
+                    <canvas id="comparisonChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Make locations available globally
+        window.locations = {{ locations|tojson if locations else '[]' }};
+
+        let trendChart = null;
+        let comparisonChart = null;
+        let currentLocation = null;
+        const locations = {{ locations|tojson if locations else '[]' }};
+
+        // Global function for location selection
+        function selectTrendLocation(locationName) {
+            const locationSearch = document.getElementById('locationSearch');
+            if (locationSearch) {
+                locationSearch.value = locationName;
+            }
+
+            // Remove active class from all cards
+            document.querySelectorAll('.location-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Add active class to selected card
+            const selectedCard = document.querySelector(`[data-location="${locationName}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('active');
+            }
+
+            // Load trend data
+            loadTrendData(locationName);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            setupLocationSearch();
+            setupLocationSelection();
+            loadComparisonChart();
+
+            // Load default location (first location in the list)
+            if (locations && locations.length > 0) {
+                setTimeout(() => {
+                    selectTrendLocation(locations[0]);
+                }, 500);
+            }
+        });
+
+        function initializeCharts() {
+            // Initialize trend chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Average Price (₹ Lakhs)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Price (₹ Lakhs)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupLocationSearch() {
+            const searchInput = document.getElementById('locationSearch');
+            const locationCards = document.querySelectorAll('.location-card');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+
+                    locationCards.forEach(card => {
+                        const locationName = card.textContent.toLowerCase();
+                        if (locationName.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    // Auto-select if exact match
+                    const exactMatch = locations.find(loc =>
+                        loc.toLowerCase() === searchTerm
+                    );
+                    if (exactMatch && exactMatch !== currentLocation) {
+                        selectTrendLocation(exactMatch);
+                    }
+                });
+
+                // Handle Enter key
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const searchTerm = this.value.toLowerCase();
+                        const matchedLocation = locations.find(loc =>
+                            loc.toLowerCase().includes(searchTerm)
+                        );
+                        if (matchedLocation) {
+                            selectTrendLocation(matchedLocation);
+                        }
+                    }
+                });
+            }
+        }
+
+        function setupLocationSelection() {
+            const locationCards = document.querySelectorAll('.location-card');
+            
+            locationCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove active class from all cards
+                    locationCards.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked card
+                    this.classList.add('active');
+                    
+                    // Load trend data for selected location
+                    const location = this.dataset.location;
+                    loadTrendData(location);
+                });
+            });
+        }
+
+        async function loadTrendData(location) {
+            if (!location) {
+                console.error('No location provided');
+                return;
+            }
+
+            console.log('Loading trend data for:', location);
+
+            currentLocation = location;
+            document.getElementById('selectedLocation').textContent = location;
+            document.getElementById('chartLoading').style.display = 'block';
+            document.getElementById('trendChart').style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/trends/${encodeURIComponent(location)}`);
+                console.log('API response status:', response.status);
+
+                const data = await response.json();
+                console.log('API response data:', data);
+
+                if (data.success && data.trends) {
+                    updateTrendChart(data.trends);
+                    updateMarketInsights(location, data.trends);
+                    updateStatistics(data.trends);
+
+                    // Show success message
+                    console.log('Trend data loaded successfully for', location);
+                } else {
+                    throw new Error(data.error || 'No trend data available');
+                }
+            } catch (error) {
+                console.error('Error loading trend data:', error);
+
+                // Show user-friendly error
+                document.getElementById('marketInsights').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading trend data for ${location}. Please try again.
+                    </div>
+                `;
+            } finally {
+                document.getElementById('chartLoading').style.display = 'none';
+                document.getElementById('trendChart').style.display = 'block';
+            }
+        }
+
+        function updateTrendChart(trends) {
+            if (!trendChart) {
+                console.error('Trend chart not initialized');
+                return;
+            }
+
+            console.log('Updating chart with data:', trends);
+
+            // Update chart data
+            trendChart.data.labels = trends.years || [];
+            trendChart.data.datasets[0].data = trends.prices || [];
+            trendChart.data.datasets[0].label = `Price Trend - ${currentLocation}`;
+
+            // Force chart update with animation
+            trendChart.update('active');
+
+            console.log('Chart updated successfully');
+        }
+
+        function updateMarketInsights(location, trends) {
+            const prices = trends.prices;
+            const latestPrice = prices[prices.length - 1];
+            const previousPrice = prices[prices.length - 2];
+            const growth = ((latestPrice - previousPrice) / previousPrice * 100).toFixed(1);
+            const totalGrowth = ((latestPrice - prices[0]) / prices[0] * 100).toFixed(1);
+
+            const insights = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-success">
+                            <strong>Current Price:</strong> ₹${latestPrice.toFixed(2)} Lakhs<br>
+                            <strong>YoY Growth:</strong> ${growth > 0 ? '+' : ''}${growth}%
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <strong>Total Growth:</strong> ${totalGrowth > 0 ? '+' : ''}${totalGrowth}%<br>
+                            <strong>Investment Rating:</strong> ${growth > 10 ? 'Excellent' : growth > 5 ? 'Good' : 'Moderate'}
+                        </div>
+                    </div>
+                </div>
+                <p><strong>Market Analysis:</strong> ${location} shows ${growth > 0 ? 'positive' : 'negative'} growth trends. 
+                ${growth > 10 ? 'This location is experiencing strong appreciation and could be an excellent investment opportunity.' : 
+                  growth > 5 ? 'Steady growth makes this a reliable investment choice.' : 
+                  'Consider market conditions and future development plans before investing.'}</p>
+            `;
+
+            document.getElementById('marketInsights').innerHTML = insights;
+        }
+
+        function updateStatistics(trends) {
+            const prices = trends.prices;
+            const latestPrice = prices[prices.length - 1];
+            const previousPrice = prices[prices.length - 2];
+            const growth = ((latestPrice - previousPrice) / previousPrice * 100).toFixed(1);
+
+            document.getElementById('avgPrice').textContent = `₹${latestPrice.toFixed(1)}L`;
+            document.getElementById('priceGrowth').textContent = `${growth > 0 ? '+' : ''}${growth}%`;
+            document.getElementById('pricePerSqft').textContent = `₹${(latestPrice * 100000 / 1200).toFixed(0)}`;
+        }
+
+        function loadComparisonChart() {
+            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+            
+            // Sample data for top locations
+            const topLocations = ['Whitefield', 'Koramangala', 'Indiranagar', 'Jayanagar', 'BTM Layout'];
+            const avgPrices = [125.5, 145.2, 135.8, 118.9, 95.6];
+
+            comparisonChart = new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: topLocations,
+                    datasets: [{
+                        label: 'Average Price (₹ Lakhs)',
+                        data: avgPrices,
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(243, 156, 18, 0.8)',
+                            'rgba(231, 76, 60, 0.8)',
+                            'rgba(155, 89, 182, 0.8)'
+                        ],
+                        borderColor: [
+                            '#667eea',
+                            '#2ecc71',
+                            '#f39c12',
+                            '#e74c3c',
+                            '#9b59b6'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Price (₹ Lakhs)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function changeTimeframe(period) {
+            // Update active button
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Reload data for current location if selected
+            if (currentLocation) {
+                loadTrendData(currentLocation);
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/location-selector.js') }}"></script>
+</body>
+</html>

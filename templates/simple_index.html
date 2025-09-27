@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 Real Estate AI - Smart Property Predictions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/professional-theme.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/color-fix.css') }}" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hero-section {
+            padding: 100px 0;
+            color: rgb(237, 238, 242);
+            text-align: center;
+        }
+        .feature-card {
+            background: rgb(244, 242, 245);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: rgb(241, 237, 241);
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+        .stats-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-home me-2"></i>Real Estate AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/enhanced-predict">Enhanced Predict</a>
+                <a class="nav-link" href="/predict">Basic Predict</a>
+                <a class="nav-link" href="/browse-properties">Buy Properties</a>
+                <a class="nav-link" href="/browse-rental-properties">Rent Properties</a>
+                <a class="nav-link" href="/trends">Market Trends</a>
+                <a class="nav-link" href="/dashboard">Dashboard</a>
+                <a class="nav-link" href="/chat">AI Chat</a>
+                {% if current_user %}
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/profile">
+                            <i class="fas fa-user me-2"></i>My Profile
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/logout">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
+                {% else %}
+                <a class="nav-link" href="/login">
+                    <i class="fas fa-sign-in-alt me-1"></i>Login
+                </a>
+                <a class="nav-link btn btn-primary text-white ms-2" href="/signup">
+                    <i class="fas fa-user-plus me-1"></i>Sign Up
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">
+                        🏠 Smart Real Estate Predictions
+                    </h1>
+                    <p class="lead mb-4">
+                        Harness the power of AI to predict property prices, analyze market trends, and make informed real estate decisions in Bangalore.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+                        <a href="/predict" class="btn-custom">
+                            <i class="fas fa-calculator me-2"></i>Predict Price Now
+                        </a>
+                        <a href="/browse-rental-properties" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-key me-2"></i>Rent Properties
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <i class="fas fa-home" style="font-size: 15rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-3">🚀 Powerful Features</h2>
+                    <p class="lead text-muted">Everything you need for smart real estate decisions</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-brain fa-3x text-primary"></i>
+                        </div>
+                        <h4>AI Price Prediction</h4>
+                        <p class="text-muted">Advanced machine learning algorithms predict property prices with high accuracy based on location, size, and amenities.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-map-marker-alt fa-3x text-success"></i>
+                        </div>
+                        <h4>Location Intelligence</h4>
+                        <p class="text-muted">Comprehensive location analysis covering {{ locations|length }} areas in Bangalore with detailed insights.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-history fa-3x text-warning"></i>
+                        </div>
+                        <h4>Prediction History</h4>
+                        <p class="text-muted">Track your prediction history and compare different properties to make informed decisions.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-key fa-3x text-info"></i>
+                        </div>
+                        <h4>Rental Properties</h4>
+                        <p class="text-muted">Browse approved rental properties for long-term and short-term accommodation needs.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-home fa-3x text-danger"></i>
+                        </div>
+                        <h4>Property Marketplace</h4>
+                        <p class="text-muted">Browse and list properties for sale with AI-powered price insights and owner contact details.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Prediction Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-5">
+                            <h3 class="text-center mb-4">🎯 Quick Price Check</h3>
+                            <div class="text-center mb-4">
+                                <a href="/enhanced-predict" class="btn btn-primary btn-lg me-3">
+                                    <i class="fas fa-magic me-2"></i>Enhanced Prediction
+                                </a>
+                                <a href="/predict" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-calculator me-2"></i>Basic Prediction
+                                </a>
+                            </div>
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-star me-2"></i>
+                                <strong>New!</strong> Try our Enhanced Prediction with property-type-specific features and advanced analytics.
+                            </div>
+                            
+                            <form id="quickForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Location</label>
+                                        <div class="position-relative">
+                                            <input type="text" class="form-control" name="location" id="quickLocationInput"
+                                                   placeholder="Type to search locations..." required autocomplete="off"
+                                                   list="quickLocationDatalist">
+                                            <datalist id="quickLocationDatalist">
+                                                {% for location in locations %}
+                                                <option value="{{ location }}">{{ location }}</option>
+                                                {% endfor %}
+                                            </datalist>
+                                            <div class="location-dropdown" id="quickLocationDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000;">
+                                                {% for location in locations %}
+                                                <div class="location-option" data-value="{{ location }}" onclick="selectQuickLocation('{{ location }}')" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                                    <i class="fas fa-map-marker-alt me-2"></i>{{ location }}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Size</label>
+                                        <select class="form-select" name="size" required>
+                                            <option value="">Select Size</option>
+                                            <option value="1 BHK">1 BHK</option>
+                                            <option value="2 BHK">2 BHK</option>
+                                            <option value="3 BHK">3 BHK</option>
+                                            <option value="4 BHK">4 BHK</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Total Sqft</label>
+                                        <input type="number" class="form-control" name="total_sqft" placeholder="1200" min="300" max="10000" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Bathrooms</label>
+                                        <select class="form-select" name="bath" required>
+                                            <option value="">Select</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4+</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="fas fa-magic me-2"></i>Get Quick Estimate
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            
+                            <div id="quickResult" class="mt-4" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- EMI Calculator Widget -->
+                    <div class="col-lg-6">
+                        <div class="card h-100 animate-fade-in-left">
+                            <div class="card-header">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-calculator me-2"></i>
+                                    Quick EMI Calculator
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <form id="emiCalculatorForm">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Property Price (₹ Lakhs)</label>
+                                            <input type="number" class="form-control" id="propertyPrice"
+                                                   placeholder="e.g., 85" min="10" max="1000" value="85">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Down Payment (%)</label>
+                                            <input type="number" class="form-control" id="downPayment"
+                                                   placeholder="20" min="10" max="50" value="20">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Interest Rate (%)</label>
+                                            <input type="number" class="form-control" id="interestRate"
+                                                   placeholder="8.5" min="6" max="15" step="0.1" value="8.5">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Loan Tenure (Years)</label>
+                                            <select class="form-select" id="loanTenure">
+                                                <option value="15">15 Years</option>
+                                                <option value="20" selected>20 Years</option>
+                                                <option value="25">25 Years</option>
+                                                <option value="30">30 Years</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                                <i class="fas fa-calculator me-2"></i>Calculate EMI
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div id="emiResult" class="mt-4" style="display: none;">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="stat-card">
+                                                <div class="stat-value" id="monthlyEmi">₹0</div>
+                                                <div class="stat-label">Monthly EMI</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="stat-card">
+                                                <div class="stat-value" id="upfrontCost">₹0</div>
+                                                <div class="stat-label">Upfront Cost</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="alert alert-info">
+                                                <strong>Required Monthly Income:</strong> <span id="requiredIncome">₹0</span>
+                                                <br><small>Based on 40% income-to-EMI ratio</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-number">{{ locations|length }}</div>
+                    <div>Locations Covered</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-number">95%</div>
+                    <div>Prediction Accuracy</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-number">5K+</div>
+                    <div>Happy Users</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-number">24/7</div>
+                    <div>Available</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p>&copy; 2025 Real Estate AI. All rights reserved.</p>
+            <p>Powered by AI & Machine Learning</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('quickForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            data.balcony = 1;
+            data.area_type = 'Super built-up Area';
+            data.availability = 'Ready To Move';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('quickResult').innerHTML = `
+                        <div class="alert alert-success text-center">
+                            <h4>Estimated Price: ${result.formatted_price}</h4>
+                            <p>Confidence: ${result.confidence}</p>
+                            <a href="/predict" class="btn btn-primary">Get Detailed Analysis</a>
+                        </div>
+                    `;
+                    document.getElementById('quickResult').style.display = 'block';
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                document.getElementById('quickResult').innerHTML = `
+                    <div class="alert alert-danger">Error: ${error.message}</div>
+                `;
+                document.getElementById('quickResult').style.display = 'block';
+            }
+        });
+
+        // EMI Calculator
+        document.getElementById('emiCalculatorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const propertyPrice = parseFloat(document.getElementById('propertyPrice').value);
+            const downPayment = parseFloat(document.getElementById('downPayment').value);
+            const interestRate = parseFloat(document.getElementById('interestRate').value);
+            const loanTenure = parseInt(document.getElementById('loanTenure').value);
+
+            if (!propertyPrice || propertyPrice <= 0) {
+                alert('Please enter a valid property price');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/property-emi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        property_price: propertyPrice,
+                        down_payment_percent: downPayment,
+                        rate: interestRate,
+                        tenure: loanTenure
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('monthlyEmi').textContent = result.formatted_emi;
+                    document.getElementById('upfrontCost').textContent = result.formatted_upfront;
+                    document.getElementById('requiredIncome').textContent = `₹${result.monthly_income_required.toLocaleString()}`;
+                    document.getElementById('emiResult').style.display = 'block';
+
+                    // Add animation
+                    document.getElementById('emiResult').classList.add('animate-fade-in-up');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                alert('Error calculating EMI: ' + error.message);
+            }
+        });
+
+        // Auto-calculate EMI on input change
+        ['propertyPrice', 'downPayment', 'interestRate', 'loanTenure'].forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                if (document.getElementById('propertyPrice').value) {
+                    document.getElementById('emiCalculatorForm').dispatchEvent(new Event('submit'));
+                }
+            });
+        });
+
+        // Quick Location Selection
+        function selectQuickLocation(locationName) {
+            const locationInput = document.getElementById('quickLocationInput');
+            const locationDropdown = document.getElementById('quickLocationDropdown');
+
+            if (locationInput) {
+                locationInput.value = locationName;
+                locationInput.classList.remove('is-invalid');
+                locationInput.classList.add('is-valid');
+            }
+
+            if (locationDropdown) {
+                locationDropdown.style.display = 'none';
+            }
+        }
+
+        // Setup Quick Location Selector
+        document.addEventListener('DOMContentLoaded', function() {
+            const quickLocationInput = document.getElementById('quickLocationInput');
+            const quickLocationDropdown = document.getElementById('quickLocationDropdown');
+
+            if (quickLocationInput && quickLocationDropdown) {
+                setupQuickLocationSelector(quickLocationInput, quickLocationDropdown);
+            }
+        });
+
+        function setupQuickLocationSelector(input, dropdown) {
+            const options = dropdown.querySelectorAll('.location-option');
+            let selectedIndex = -1;
+
+            // Show dropdown on focus/click
+            input.addEventListener('focus', function() {
+                dropdown.style.display = 'block';
+                filterQuickLocations(input, dropdown, '');
+            });
+
+            input.addEventListener('click', function() {
+                dropdown.style.display = 'block';
+                filterQuickLocations(input, dropdown, '');
+            });
+
+            // Filter locations on input
+            input.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                filterQuickLocations(input, dropdown, query);
+                selectedIndex = -1;
+            });
+
+            // Handle keyboard navigation
+            input.addEventListener('keydown', function(e) {
+                const visibleOptions = Array.from(options).filter(opt => opt.style.display !== 'none');
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, visibleOptions.length - 1);
+                    updateQuickSelection(options, visibleOptions, selectedIndex);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateQuickSelection(options, visibleOptions, selectedIndex);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
+                        const selectedLocation = visibleOptions[selectedIndex].dataset.value;
+                        selectQuickLocation(selectedLocation);
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.style.display = 'none';
+                    selectedIndex = -1;
+                }
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                    selectedIndex = -1;
+                }
+            });
+        }
+
+        function filterQuickLocations(input, dropdown, query) {
+            const options = dropdown.querySelectorAll('.location-option');
+            options.forEach(option => {
+                const text = option.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+
+        function updateQuickSelection(allOptions, visibleOptions, selectedIndex) {
+            allOptions.forEach(opt => opt.classList.remove('selected'));
+            if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
+                visibleOptions[selectedIndex].classList.add('selected');
+                visibleOptions[selectedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Settings - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .admin-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-navbar .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .admin-navbar .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-navbar .nav-link:hover {
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .settings-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .settings-card-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .admin-header {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .admin-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .setting-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .setting-description {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+        
+        .setting-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .btn-admin {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .btn-success-admin {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+        
+        .btn-warning-admin {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            border: none;
+            color: #212529;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-warning-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+            color: #212529;
+        }
+        
+        .btn-danger-admin {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="navbar navbar-expand-lg admin-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">
+                <i class="fas fa-shield-alt me-2"></i>
+                Admin Panel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="adminNavbar">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/properties">
+                            <i class="fas fa-home me-1"></i>Properties
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">
+                            <i class="fas fa-users me-1"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/analytics">
+                            <i class="fas fa-chart-bar me-1"></i>Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/settings">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>{{ admin_username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin/logout">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="admin-title">System Settings</h1>
+                    <p class="admin-subtitle">Configure and manage your Real Estate AI platform settings.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="status-badge status-active">System Online</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- System Information -->
+            <div class="col-lg-4">
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-info-circle me-2"></i>System Information
+                    </div>
+                    <div class="card-body">
+                        <div class="info-card">
+                            <div class="info-value">{{ settings.system_info.total_properties }}</div>
+                            <div class="info-label">Total Properties</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-value">{{ settings.system_info.total_users }}</div>
+                            <div class="info-label">Active Users</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-value">{{ settings.system_info.admin_sessions }}</div>
+                            <div class="info-label">Admin Sessions</div>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">System Uptime</div>
+                                <div class="setting-description">Current system status</div>
+                            </div>
+                            <div class="setting-value">{{ settings.system_info.uptime }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="col-lg-4">
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-shield-alt me-2"></i>Security Settings
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Rate Limiting</div>
+                                <div class="setting-description">Protect against brute force attacks</div>
+                            </div>
+                            <span class="status-badge status-active">Enabled</span>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Admin Sessions</div>
+                                <div class="setting-description">Currently active admin sessions</div>
+                            </div>
+                            <div class="setting-value">{{ settings.security_settings.admin_sessions_active }}</div>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Failed Login Attempts</div>
+                                <div class="setting-description">Recent failed login attempts</div>
+                            </div>
+                            <div class="setting-value">{{ settings.security_settings.failed_login_attempts }}</div>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Session Security</div>
+                                <div class="setting-description">Secure session management</div>
+                            </div>
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Configuration -->
+            <div class="col-lg-4">
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-cogs me-2"></i>System Configuration
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Max Image Upload</div>
+                                <div class="setting-description">Maximum images per property</div>
+                            </div>
+                            <div class="setting-value">{{ settings.system_settings.max_image_upload }}</div>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Max File Size</div>
+                                <div class="setting-description">Maximum file size for uploads</div>
+                            </div>
+                            <div class="setting-value">{{ settings.system_settings.max_file_size }}</div>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Allowed File Types</div>
+                                <div class="setting-description">Supported image formats</div>
+                            </div>
+                            <div class="setting-value">{{ settings.system_settings.allowed_file_types | join(', ') }}</div>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <div class="setting-label">Session Timeout</div>
+                                <div class="setting-description">Admin session timeout duration</div>
+                            </div>
+                            <div class="setting-value">{{ settings.system_settings.session_timeout }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Actions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-tools me-2"></i>System Actions
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h6>Cache Management</h6>
+                                <p class="text-muted">Clear system cache for better performance</p>
+                                <button class="btn btn-warning-admin w-100" onclick="clearCache()">
+                                    <i class="fas fa-trash me-2"></i>Clear Cache
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <h6>Data Export</h6>
+                                <p class="text-muted">Export all system data for backup</p>
+                                <button class="btn btn-admin w-100" onclick="exportData()">
+                                    <i class="fas fa-download me-2"></i>Export Data
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <h6>System Backup</h6>
+                                <p class="text-muted">Create a complete system backup</p>
+                                <button class="btn btn-success-admin w-100" onclick="createBackup()">
+                                    <i class="fas fa-save me-2"></i>Create Backup
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <h6>System Restart</h6>
+                                <p class="text-muted">Restart the application server</p>
+                                <button class="btn btn-danger-admin w-100" onclick="restartSystem()">
+                                    <i class="fas fa-redo me-2"></i>Restart System
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Updates -->
+        <div class="row">
+            <div class="col-12">
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-edit me-2"></i>Configuration Updates
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Configuration changes require system restart to take effect. 
+                            Always create a backup before making significant changes.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Upload Settings</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Max Images per Property</label>
+                                    <input type="number" class="form-control" value="{{ settings.system_settings.max_image_upload }}" min="1" max="10">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Max File Size (MB)</label>
+                                    <input type="number" class="form-control" value="10" min="1" max="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Security Settings</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Session Timeout (minutes)</label>
+                                    <input type="number" class="form-control" value="60" min="15" max="480">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Max Login Attempts</label>
+                                    <input type="number" class="form-control" value="5" min="3" max="10">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button class="btn btn-success-admin" onclick="saveSettings()">
+                                <i class="fas fa-save me-2"></i>Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function clearCache() {
+            if (confirm('Are you sure you want to clear the system cache? This may temporarily affect performance.')) {
+                alert('System cache cleared successfully!');
+                // Add actual cache clearing logic here
+            }
+        }
+
+        function exportData() {
+            if (confirm('Export all system data? This may take a few moments.')) {
+                alert('Data export initiated! Download will start shortly.');
+                // Add actual export logic here
+            }
+        }
+
+        function createBackup() {
+            if (confirm('Create a complete system backup? This may take several minutes.')) {
+                alert('System backup initiated! You will be notified when complete.');
+                // Add actual backup logic here
+            }
+        }
+
+        function restartSystem() {
+            if (confirm('Are you sure you want to restart the system? This will temporarily interrupt service.')) {
+                alert('System restart initiated! Please wait for the system to come back online.');
+                // Add actual restart logic here
+            }
+        }
+
+        function saveSettings() {
+            if (confirm('Save configuration changes? The system may need to restart.')) {
+                alert('Settings saved successfully! Some changes may require a system restart.');
+                // Add actual settings save logic here
+            }
+        }
+    </script>
+</body>
+</html>

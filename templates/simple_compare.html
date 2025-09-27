@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Comparison - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand, .nav-link {
+            color: #333 !important;
+        }
+        .property-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        .comparison-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .price-display {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .feature-row {
+            border-bottom: 1px solid #eee;
+            padding: 1rem 0;
+        }
+        .feature-row:last-child {
+            border-bottom: none;
+        }
+        .better-value {
+            background: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+            font-weight: 600;
+        }
+        .add-property-btn {
+            border: 2px dashed #667eea;
+            background: rgba(102, 126, 234, 0.05);
+            color: #667eea;
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .add-property-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-home me-2"></i>Real Estate AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/predict">Predict Price</a>
+                <a class="nav-link" href="/trends">Market Trends</a>
+                <a class="nav-link active" href="/compare">Compare</a>
+                <a class="nav-link" href="/about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">🆚 Property Comparison</h1>
+                <p class="lead text-muted">Compare multiple properties side-by-side to make informed decisions</p>
+            </div>
+        </div>
+
+        <!-- Property Input Forms -->
+        <div class="row mb-5">
+            <div class="col-lg-6">
+                <div class="property-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-home text-primary me-2"></i>
+                        Property A
+                    </h4>
+                    <form id="propertyFormA">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Location</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control" name="location" id="locationInputA"
+                                           placeholder="Type to search locations..." required autocomplete="off"
+                                           list="locationDatalistA">
+                                    <datalist id="locationDatalistA">
+                                        {% for location in locations %}
+                                        <option value="{{ location }}">{{ location }}</option>
+                                        {% endfor %}
+                                    </datalist>
+                                    <div class="location-dropdown" id="locationDropdownA" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000;">
+                                        {% for location in locations %}
+                                        <div class="location-option" data-value="{{ location }}" onclick="selectLocationA('{{ location }}')" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                            <i class="fas fa-map-marker-alt me-2"></i>{{ location }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Size</label>
+                                <select class="form-select" name="size" required>
+                                    <option value="">Select Size</option>
+                                    <option value="1 BHK">1 BHK</option>
+                                    <option value="2 BHK">2 BHK</option>
+                                    <option value="3 BHK">3 BHK</option>
+                                    <option value="4 BHK">4 BHK</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Total Sqft</label>
+                                <input type="number" class="form-control" name="total_sqft" placeholder="1200" min="300" max="10000" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Bathrooms</label>
+                                <select class="form-select" name="bath" required>
+                                    <option value="">Select</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4+</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-calculator me-2"></i>Predict Property A
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="resultA" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="property-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-home text-success me-2"></i>
+                        Property B
+                    </h4>
+                    <form id="propertyFormB">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Location</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control" name="location" id="locationInputB"
+                                           placeholder="Type to search locations..." required autocomplete="off"
+                                           list="locationDatalistB">
+                                    <datalist id="locationDatalistB">
+                                        {% for location in locations %}
+                                        <option value="{{ location }}">{{ location }}</option>
+                                        {% endfor %}
+                                    </datalist>
+                                    <div class="location-dropdown" id="locationDropdownB" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000;">
+                                        {% for location in locations %}
+                                        <div class="location-option" data-value="{{ location }}" onclick="selectLocationB('{{ location }}')" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                            <i class="fas fa-map-marker-alt me-2"></i>{{ location }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Size</label>
+                                <select class="form-select" name="size" required>
+                                    <option value="">Select Size</option>
+                                    <option value="1 BHK">1 BHK</option>
+                                    <option value="2 BHK">2 BHK</option>
+                                    <option value="3 BHK">3 BHK</option>
+                                    <option value="4 BHK">4 BHK</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Total Sqft</label>
+                                <input type="number" class="form-control" name="total_sqft" placeholder="1200" min="300" max="10000" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Bathrooms</label>
+                                <select class="form-select" name="bath" required>
+                                    <option value="">Select</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4+</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-calculator me-2"></i>Predict Property B
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="resultB" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div id="comparisonSection" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="comparison-table">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th class="text-center">Property A</th>
+                                        <th class="text-center">Property B</th>
+                                        <th class="text-center">Better Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comparisonTableBody">
+                                    <!-- Comparison rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Analysis -->
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="property-card">
+                        <h5 class="mb-3">
+                            <i class="fas fa-chart-pie text-warning me-2"></i>
+                            Investment Analysis
+                        </h5>
+                        <div id="investmentAnalysis">
+                            <!-- Analysis will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="property-card">
+                        <h5 class="mb-3">
+                            <i class="fas fa-lightbulb text-info me-2"></i>
+                            Recommendation
+                        </h5>
+                        <div id="recommendation">
+                            <!-- Recommendation will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let propertyA = null;
+        let propertyB = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupForms();
+        });
+
+        function setupForms() {
+            document.getElementById('propertyFormA').addEventListener('submit', function(e) {
+                e.preventDefault();
+                predictProperty('A', this);
+            });
+
+            document.getElementById('propertyFormB').addEventListener('submit', function(e) {
+                e.preventDefault();
+                predictProperty('B', this);
+            });
+        }
+
+        async function predictProperty(property, form) {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            data.balcony = 1;
+            data.area_type = 'Super built-up Area';
+            data.availability = 'Ready To Move';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const propertyData = {
+                        ...data,
+                        predicted_price: result.prediction,
+                        formatted_price: result.formatted_price,
+                        price_per_sqft: result.prediction / parseFloat(data.total_sqft)
+                    };
+
+                    if (property === 'A') {
+                        propertyA = propertyData;
+                    } else {
+                        propertyB = propertyData;
+                    }
+
+                    displayPropertyResult(property, propertyData);
+                    
+                    if (propertyA && propertyB) {
+                        showComparison();
+                    }
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function displayPropertyResult(property, data) {
+            const resultDiv = document.getElementById(`result${property}`);
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>Predicted Price: ${data.formatted_price}</h6>
+                    <small>₹${data.price_per_sqft.toFixed(0)}/sqft</small>
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+        }
+
+        function showComparison() {
+            document.getElementById('comparisonSection').style.display = 'block';
+            
+            const tableBody = document.getElementById('comparisonTableBody');
+            const pricePerSqftA = propertyA.price_per_sqft;
+            const pricePerSqftB = propertyB.price_per_sqft;
+            
+            tableBody.innerHTML = `
+                <tr class="feature-row">
+                    <td><strong>Location</strong></td>
+                    <td class="text-center">${propertyA.location}</td>
+                    <td class="text-center">${propertyB.location}</td>
+                    <td class="text-center">-</td>
+                </tr>
+                <tr class="feature-row">
+                    <td><strong>Size</strong></td>
+                    <td class="text-center">${propertyA.size}</td>
+                    <td class="text-center">${propertyB.size}</td>
+                    <td class="text-center">-</td>
+                </tr>
+                <tr class="feature-row">
+                    <td><strong>Total Area</strong></td>
+                    <td class="text-center">${propertyA.total_sqft} sqft</td>
+                    <td class="text-center">${propertyB.total_sqft} sqft</td>
+                    <td class="text-center ${propertyA.total_sqft > propertyB.total_sqft ? 'better-value' : propertyB.total_sqft > propertyA.total_sqft ? '' : ''}">${propertyA.total_sqft > propertyB.total_sqft ? 'Property A' : propertyB.total_sqft > propertyA.total_sqft ? 'Property B' : 'Equal'}</td>
+                </tr>
+                <tr class="feature-row">
+                    <td><strong>Bathrooms</strong></td>
+                    <td class="text-center">${propertyA.bath}</td>
+                    <td class="text-center">${propertyB.bath}</td>
+                    <td class="text-center ${propertyA.bath > propertyB.bath ? 'better-value' : propertyB.bath > propertyA.bath ? '' : ''}">${propertyA.bath > propertyB.bath ? 'Property A' : propertyB.bath > propertyA.bath ? 'Property B' : 'Equal'}</td>
+                </tr>
+                <tr class="feature-row">
+                    <td><strong>Predicted Price</strong></td>
+                    <td class="text-center price-display" style="font-size: 1.2rem;">${propertyA.formatted_price}</td>
+                    <td class="text-center price-display" style="font-size: 1.2rem;">${propertyB.formatted_price}</td>
+                    <td class="text-center ${propertyA.predicted_price < propertyB.predicted_price ? 'better-value' : propertyB.predicted_price < propertyA.predicted_price ? '' : ''}">${propertyA.predicted_price < propertyB.predicted_price ? 'Property A' : propertyB.predicted_price < propertyA.predicted_price ? 'Property B' : 'Equal'}</td>
+                </tr>
+                <tr class="feature-row">
+                    <td><strong>Price per Sqft</strong></td>
+                    <td class="text-center">₹${pricePerSqftA.toFixed(0)}</td>
+                    <td class="text-center">₹${pricePerSqftB.toFixed(0)}</td>
+                    <td class="text-center ${pricePerSqftA < pricePerSqftB ? 'better-value' : pricePerSqftB < pricePerSqftA ? '' : ''}">${pricePerSqftA < pricePerSqftB ? 'Property A' : pricePerSqftB < pricePerSqftA ? 'Property B' : 'Equal'}</td>
+                </tr>
+            `;
+
+            generateInvestmentAnalysis();
+            generateRecommendation();
+        }
+
+        function generateInvestmentAnalysis() {
+            const priceDiff = Math.abs(propertyA.predicted_price - propertyB.predicted_price);
+            const priceDiffPercent = (priceDiff / Math.min(propertyA.predicted_price, propertyB.predicted_price) * 100).toFixed(1);
+            
+            const analysis = `
+                <div class="mb-3">
+                    <strong>Price Difference:</strong> ₹${priceDiff.toFixed(2)} Lakhs (${priceDiffPercent}%)
+                </div>
+                <div class="mb-3">
+                    <strong>Value Analysis:</strong>
+                    <ul class="mt-2">
+                        <li>Property A: ₹${propertyA.price_per_sqft.toFixed(0)}/sqft</li>
+                        <li>Property B: ₹${propertyB.price_per_sqft.toFixed(0)}/sqft</li>
+                    </ul>
+                </div>
+                <div class="alert alert-info">
+                    <small><i class="fas fa-info-circle me-1"></i>
+                    ${propertyA.price_per_sqft < propertyB.price_per_sqft ? 
+                        'Property A offers better value per square foot.' : 
+                        'Property B offers better value per square foot.'}
+                    </small>
+                </div>
+            `;
+            
+            document.getElementById('investmentAnalysis').innerHTML = analysis;
+        }
+
+        function generateRecommendation() {
+            let recommendation = '';
+            
+            if (propertyA.predicted_price < propertyB.predicted_price && propertyA.price_per_sqft < propertyB.price_per_sqft) {
+                recommendation = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-thumbs-up me-2"></i>Recommendation: Property A</h6>
+                        <p>Property A offers better value with lower total price and better price per sqft ratio. It's the more economical choice.</p>
+                    </div>
+                `;
+            } else if (propertyB.predicted_price < propertyA.predicted_price && propertyB.price_per_sqft < propertyA.price_per_sqft) {
+                recommendation = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-thumbs-up me-2"></i>Recommendation: Property B</h6>
+                        <p>Property B offers better value with lower total price and better price per sqft ratio. It's the more economical choice.</p>
+                    </div>
+                `;
+            } else {
+                recommendation = `
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-balance-scale me-2"></i>Both properties have merits</h6>
+                        <p>Consider factors like location convenience, amenities, and future development plans to make your decision.</p>
+                    </div>
+                `;
+            }
+            
+            recommendation += `
+                <div class="mt-3">
+                    <h6>Additional Considerations:</h6>
+                    <ul class="small">
+                        <li>Check proximity to schools, hospitals, and transport</li>
+                        <li>Verify builder reputation and project approvals</li>
+                        <li>Consider resale potential and rental yield</li>
+                        <li>Factor in additional costs like registration and maintenance</li>
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('recommendation').innerHTML = recommendation;
+        }
+
+        // Location selection functions
+        function selectLocationA(locationName) {
+            const locationInput = document.getElementById('locationInputA');
+            const locationDropdown = document.getElementById('locationDropdownA');
+
+            if (locationInput) {
+                locationInput.value = locationName;
+                locationInput.classList.remove('is-invalid');
+                locationInput.classList.add('is-valid');
+            }
+
+            if (locationDropdown) {
+                locationDropdown.style.display = 'none';
+            }
+        }
+
+        function selectLocationB(locationName) {
+            const locationInput = document.getElementById('locationInputB');
+            const locationDropdown = document.getElementById('locationDropdownB');
+
+            if (locationInput) {
+                locationInput.value = locationName;
+                locationInput.classList.remove('is-invalid');
+                locationInput.classList.add('is-valid');
+            }
+
+            if (locationDropdown) {
+                locationDropdown.style.display = 'none';
+            }
+        }
+
+        // Enhanced Location Selection for both properties
+        document.addEventListener('DOMContentLoaded', function() {
+            // Property A location selection
+            const locationInputA = document.getElementById('locationInputA');
+            const locationDropdownA = document.getElementById('locationDropdownA');
+
+            if (locationInputA && locationDropdownA) {
+                setupLocationSelector(locationInputA, locationDropdownA, 'A');
+            }
+
+            // Property B location selection
+            const locationInputB = document.getElementById('locationInputB');
+            const locationDropdownB = document.getElementById('locationDropdownB');
+
+            if (locationInputB && locationDropdownB) {
+                setupLocationSelector(locationInputB, locationDropdownB, 'B');
+            }
+        });
+
+        function setupLocationSelector(input, dropdown, property) {
+            const options = dropdown.querySelectorAll('.location-option');
+            let selectedIndex = -1;
+
+            // Show dropdown on focus/click
+            input.addEventListener('focus', function() {
+                dropdown.style.display = 'block';
+                filterLocations(input, dropdown, '');
+            });
+
+            input.addEventListener('click', function() {
+                dropdown.style.display = 'block';
+                filterLocations(input, dropdown, '');
+            });
+
+            // Filter locations on input
+            input.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                filterLocations(input, dropdown, query);
+                selectedIndex = -1;
+            });
+
+            // Handle keyboard navigation
+            input.addEventListener('keydown', function(e) {
+                const visibleOptions = Array.from(options).filter(opt => opt.style.display !== 'none');
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, visibleOptions.length - 1);
+                    updateSelection(options, visibleOptions, selectedIndex);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateSelection(options, visibleOptions, selectedIndex);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
+                        const selectedLocation = visibleOptions[selectedIndex].dataset.value;
+                        if (property === 'A') {
+                            selectLocationA(selectedLocation);
+                        } else {
+                            selectLocationB(selectedLocation);
+                        }
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.style.display = 'none';
+                    selectedIndex = -1;
+                }
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                    selectedIndex = -1;
+                }
+            });
+        }
+
+        function filterLocations(input, dropdown, query) {
+            const options = dropdown.querySelectorAll('.location-option');
+            options.forEach(option => {
+                const text = option.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+
+        function updateSelection(allOptions, visibleOptions, selectedIndex) {
+            allOptions.forEach(opt => opt.classList.remove('selected'));
+            if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
+                visibleOptions[selectedIndex].classList.add('selected');
+                visibleOptions[selectedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+    </script>
+    <style>
+        .location-option:hover, .location-option.selected {
+            background-color: #667eea;
+            color: white;
+        }
+    </style>
+</body>
+</html>

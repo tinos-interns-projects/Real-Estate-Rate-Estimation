@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Rental Property - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand, .nav-link {
+            color: #333 !important;
+        }
+        .listing-form {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .success-card {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .location-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .location-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+        .location-option:hover {
+            background-color: #f8f9fa;
+        }
+        .location-option.selected {
+            background-color: #667eea;
+            color: white;
+        }
+        .hero-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            text-align: center;
+        }
+        .pricing-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-home me-2"></i>Real Estate AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/predict">Predict Price</a>
+                <a class="nav-link" href="/browse-properties">Buy Properties</a>
+                <a class="nav-link" href="/browse-rental-properties">Rent Properties</a>
+                <a class="nav-link active" href="/list-rental">List Rental</a>
+                <a class="nav-link" href="/about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="display-4 fw-bold mb-3">🏠 List Your Rental Property</h1>
+            <p class="lead">Connect with tourists and business travelers visiting Bangalore</p>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="h4">₹2,500+</div>
+                    <small>Average Daily Earnings</small>
+                </div>
+                <div class="col-md-4">
+                    <div class="h4">85%</div>
+                    <small>Average Occupancy</small>
+                </div>
+                <div class="col-md-4">
+                    <div class="h4">24/7</div>
+                    <small>Host Support</small>
+                </div>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        {% if success and rental_data %}
+        <div class="success-card">
+            <h3><i class="fas fa-check-circle me-2"></i>Rental Property Listed Successfully!</h3>
+            <p class="mb-3">Your property is now available for tourists and business travelers.</p>
+            
+            <div class="row text-center mt-4">
+                <div class="col-md-4">
+                    <h5>Property ID</h5>
+                    <div class="h4">{{ rental_data.id }}</div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Daily Rate</h5>
+                    <div class="h4">₹{{ rental_data.daily_rate }}</div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Monthly Potential</h5>
+                    <div class="h4">₹{{ "%.0f"|format(rental_data.daily_rate * 25) }}</div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="/browse-rental-properties" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-eye me-2"></i>View Your Listing
+                </a>
+                <a href="/list-rental" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>List Another Property
+                </a>
+            </div>
+        </div>
+        {% else %}
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="listing-form">
+                    <h4 class="mb-4">
+                        <i class="fas fa-home text-primary me-2"></i>
+                        Rental Property Details
+                    </h4>
+                    
+                    <form id="rentalListingForm" method="POST">
+                        <div class="row g-3">
+                            <!-- Property Title -->
+                            <div class="col-12">
+                                <label class="form-label">Property Title *</label>
+                                <input type="text" class="form-control" name="title" required
+                                       placeholder="e.g., Luxury 2BHK near Whitefield Tech Park">
+                            </div>
+
+                            <!-- Owner Information -->
+                            <div class="col-md-6">
+                                <label class="form-label">Your Name *</label>
+                                <input type="text" class="form-control" name="owner_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Number *</label>
+                                <input type="tel" class="form-control" name="contact_number" 
+                                       pattern="[0-9]{10}" placeholder="10-digit mobile number" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" name="email" 
+                                       placeholder="your.email@example.com">
+                            </div>
+
+                            <!-- Property Details -->
+                            <div class="col-md-6">
+                                <label class="form-label">Property Type *</label>
+                                <select class="form-select" name="property_type" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Apartment">Apartment</option>
+                                    <option value="Villa">Villa</option>
+                                    <option value="Studio">Studio</option>
+                                    <option value="Guest House">Guest House</option>
+                                    <option value="Service Apartment">Service Apartment</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location *</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control" name="location" id="locationInput" 
+                                           placeholder="Type to search locations..." required autocomplete="off"
+                                           list="locationDatalist">
+                                    <datalist id="locationDatalist">
+                                        {% for location in locations %}
+                                        <option value="{{ location }}">{{ location }}</option>
+                                        {% endfor %}
+                                    </datalist>
+                                    <div class="location-dropdown" id="locationDropdown" style="display: none;">
+                                        {% for location in locations %}
+                                        <div class="location-option" data-value="{{ location }}" onclick="selectLocation('{{ location }}')">
+                                            <i class="fas fa-map-marker-alt me-2"></i>{{ location }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Size *</label>
+                                <select class="form-select" name="size" required>
+                                    <option value="">Select Size</option>
+                                    <option value="Studio">Studio</option>
+                                    <option value="1 BHK">1 BHK</option>
+                                    <option value="2 BHK">2 BHK</option>
+                                    <option value="3 BHK">3 BHK</option>
+                                    <option value="4 BHK">4 BHK</option>
+                                    <option value="5 BHK">5 BHK</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Total Area (sqft) *</label>
+                                <input type="number" class="form-control" name="total_sqft" 
+                                       min="200" max="5000" required>
+                            </div>
+
+                            <!-- Guest Information -->
+                            <div class="col-md-6">
+                                <label class="form-label">Maximum Guests *</label>
+                                <select class="form-select" name="max_guests" required>
+                                    <option value="">Select</option>
+                                    <option value="1">1 Guest</option>
+                                    <option value="2">2 Guests</option>
+                                    <option value="3">3 Guests</option>
+                                    <option value="4">4 Guests</option>
+                                    <option value="5">5 Guests</option>
+                                    <option value="6">6+ Guests</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Minimum Stay (nights) *</label>
+                                <select class="form-select" name="min_stay" required>
+                                    <option value="1">1 Night</option>
+                                    <option value="2">2 Nights</option>
+                                    <option value="3">3 Nights</option>
+                                    <option value="7">1 Week</option>
+                                    <option value="30">1 Month</option>
+                                </select>
+                            </div>
+
+                            <!-- Pricing -->
+                            <div class="col-md-4">
+                                <label class="form-label">Daily Rate (₹) *</label>
+                                <input type="number" class="form-control" name="daily_rate" 
+                                       min="500" max="20000" required id="dailyRate">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Weekly Rate (₹)</label>
+                                <input type="number" class="form-control" name="weekly_rate" 
+                                       placeholder="Auto-calculated" id="weeklyRate">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Monthly Rate (₹)</label>
+                                <input type="number" class="form-control" name="monthly_rate" 
+                                       placeholder="Auto-calculated" id="monthlyRate">
+                            </div>
+
+                            <div class="col-12">
+                                <div class="pricing-info">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Weekly and monthly rates are auto-calculated with discounts. You can override them.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Amenities -->
+                            <div class="col-12">
+                                <label class="form-label">Amenities (comma-separated)</label>
+                                <input type="text" class="form-control" name="amenities" 
+                                       placeholder="e.g., WiFi, AC, Kitchen, Parking, Gym, Swimming Pool">
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label class="form-label">Property Description *</label>
+                                <textarea class="form-control" name="description" rows="4" required
+                                          placeholder="Describe your property, its unique features, nearby attractions, transportation, etc."></textarea>
+                            </div>
+
+                            <!-- Booking Options -->
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="instant_book" id="instantBook">
+                                    <label class="form-check-label" for="instantBook">
+                                        <strong>Enable Instant Booking</strong>
+                                        <br><small class="text-muted">Guests can book immediately without waiting for approval</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-check me-2"></i>List My Rental Property
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Make locations available globally
+        window.locations = {{ locations|tojson if locations else '[]' }};
+    </script>
+    <script src="{{ url_for('static', filename='js/location-selector.js') }}"></script>
+    <script>
+        // Global function for location selection
+        function selectLocation(locationName) {
+            const locationInput = document.getElementById('locationInput');
+            const locationDropdown = document.getElementById('locationDropdown');
+            
+            if (locationInput) {
+                locationInput.value = locationName;
+                locationInput.classList.remove('is-invalid');
+                locationInput.classList.add('is-valid');
+            }
+            
+            if (locationDropdown) {
+                locationDropdown.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enhanced Location Selection
+            const locationInput = document.getElementById('locationInput');
+            const locationDropdown = document.getElementById('locationDropdown');
+            
+            if (locationInput && locationDropdown) {
+                const locationOptions = document.querySelectorAll('.location-option');
+
+                locationInput.addEventListener('focus', function() {
+                    locationDropdown.style.display = 'block';
+                });
+
+                locationInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase();
+                    locationOptions.forEach(option => {
+                        const text = option.textContent.toLowerCase();
+                        option.style.display = text.includes(query) ? 'block' : 'none';
+                    });
+                    locationDropdown.style.display = 'block';
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!locationInput.contains(e.target) && !locationDropdown.contains(e.target)) {
+                        locationDropdown.style.display = 'none';
+                    }
+                });
+            }
+
+            // Auto-calculate weekly and monthly rates
+            const dailyRate = document.getElementById('dailyRate');
+            const weeklyRate = document.getElementById('weeklyRate');
+            const monthlyRate = document.getElementById('monthlyRate');
+
+            function calculateRates() {
+                const daily = parseFloat(dailyRate.value) || 0;
+                if (daily > 0) {
+                    // Weekly rate: 6 days price (1 day free)
+                    if (!weeklyRate.value) {
+                        weeklyRate.placeholder = `₹${(daily * 6).toLocaleString()} (1 day free)`;
+                    }
+                    // Monthly rate: 25 days price (5 days free)
+                    if (!monthlyRate.value) {
+                        monthlyRate.placeholder = `₹${(daily * 25).toLocaleString()} (5 days free)`;
+                    }
+                }
+            }
+
+            dailyRate.addEventListener('input', calculateRates);
+
+            // Form submission
+            document.getElementById('rentalListingForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Listing Property...';
+
+                fetch('/list-rental', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.body.innerHTML = html;
+                })
+                .catch(error => {
+                    alert('Error listing rental: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-check me-2"></i>List My Rental Property';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

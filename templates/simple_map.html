@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand, .nav-link {
+            color: #333 !important;
+        }
+        #map {
+            height: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .map-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .location-info {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        .price-marker {
+            background: #667eea;
+            color: white;
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .legend {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-home me-2"></i>Real Estate AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/predict">Predict Price</a>
+                <a class="nav-link" href="/trends">Market Trends</a>
+                <a class="nav-link" href="/compare">Compare</a>
+                <a class="nav-link active" href="/map">Map View</a>
+                <a class="nav-link" href="/about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">🗺️ Interactive Property Map</h1>
+                <p class="lead text-muted">Explore properties and prices across Bangalore locations</p>
+            </div>
+        </div>
+
+        <!-- Map Controls -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="map-controls">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Price Range</label>
+                            <select class="form-select" id="priceFilter">
+                                <option value="all">All Prices</option>
+                                <option value="0-50">₹0-50 Lakhs</option>
+                                <option value="50-100">₹50-100 Lakhs</option>
+                                <option value="100-150">₹100-150 Lakhs</option>
+                                <option value="150+">₹150+ Lakhs</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Property Type</label>
+                            <select class="form-select" id="typeFilter">
+                                <option value="all">All Types</option>
+                                <option value="1 BHK">1 BHK</option>
+                                <option value="2 BHK">2 BHK</option>
+                                <option value="3 BHK">3 BHK</option>
+                                <option value="4 BHK">4 BHK</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Location</label>
+                            <select class="form-select" id="locationFilter">
+                                <option value="all">All Locations</option>
+                                {% for location in locations %}
+                                <option value="{{ location }}">{{ location }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="legend">
+                    <h6 class="mb-3">Price Legend</h6>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #27ae60;"></div>
+                        <span>₹0-50 Lakhs</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span>₹50-100 Lakhs</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e74c3c;"></div>
+                        <span>₹100-150 Lakhs</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #8e44ad;"></div>
+                        <span>₹150+ Lakhs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <!-- Location Info -->
+        <div class="row">
+            <div class="col-12">
+                <div class="location-info" id="locationInfo" style="display: none;">
+                    <h5 id="locationName">Location Details</h5>
+                    <div id="locationDetails">
+                        <!-- Location details will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let markers = [];
+        let allProperties = [];
+
+        // Bangalore coordinates
+        const bangaloreCenter = [12.9716, 77.5946];
+
+        // Sample property data with coordinates
+        const sampleProperties = [
+            { name: "Whitefield", lat: 12.9698, lng: 77.7499, price: 125.5, type: "3 BHK", sqft: 1450 },
+            { name: "Koramangala", lat: 12.9279, lng: 77.6271, price: 145.2, type: "2 BHK", sqft: 1200 },
+            { name: "Indiranagar", lat: 12.9784, lng: 77.6408, price: 135.8, type: "3 BHK", sqft: 1350 },
+            { name: "Jayanagar", lat: 12.9237, lng: 77.5838, price: 118.9, type: "2 BHK", sqft: 1100 },
+            { name: "BTM Layout", lat: 12.9165, lng: 77.6101, price: 95.6, type: "2 BHK", sqft: 1000 },
+            { name: "Electronic City", lat: 12.8452, lng: 77.6605, price: 85.3, type: "2 BHK", sqft: 950 },
+            { name: "Marathahalli", lat: 12.9569, lng: 77.7011, price: 110.4, type: "3 BHK", sqft: 1300 },
+            { name: "HSR Layout", lat: 12.9082, lng: 77.6476, price: 128.7, type: "3 BHK", sqft: 1400 },
+            { name: "Sarjapur Road", lat: 12.9010, lng: 77.6956, price: 98.2, type: "2 BHK", sqft: 1050 },
+            { name: "Hebbal", lat: 13.0358, lng: 77.5970, price: 92.1, type: "2 BHK", sqft: 980 }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            loadProperties();
+        });
+
+        function initializeMap() {
+            map = L.map('map').setView(bangaloreCenter, 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add Bangalore boundary circle
+            L.circle(bangaloreCenter, {
+                color: '#667eea',
+                fillColor: '#667eea',
+                fillOpacity: 0.1,
+                radius: 25000
+            }).addTo(map);
+        }
+
+        function loadProperties() {
+            allProperties = sampleProperties;
+            displayProperties(allProperties);
+        }
+
+        function displayProperties(properties) {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            properties.forEach(property => {
+                const color = getPriceColor(property.price);
+                
+                const marker = L.circleMarker([property.lat, property.lng], {
+                    radius: 12,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                // Create popup content
+                const popupContent = `
+                    <div style="min-width: 200px;">
+                        <h6><i class="fas fa-map-marker-alt me-2"></i>${property.name}</h6>
+                        <p class="mb-2"><strong>Price:</strong> ₹${property.price} Lakhs</p>
+                        <p class="mb-2"><strong>Type:</strong> ${property.type}</p>
+                        <p class="mb-2"><strong>Area:</strong> ${property.sqft} sqft</p>
+                        <p class="mb-0"><strong>Price/sqft:</strong> ₹${(property.price * 100000 / property.sqft).toFixed(0)}</p>
+                        <hr>
+                        <button class="btn btn-primary btn-sm w-100" onclick="showLocationDetails('${property.name}')">
+                            View Details
+                        </button>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+
+                // Add click event
+                marker.on('click', function() {
+                    showLocationInfo(property);
+                });
+            });
+        }
+
+        function getPriceColor(price) {
+            if (price <= 50) return '#27ae60';      // Green
+            if (price <= 100) return '#f39c12';    // Orange
+            if (price <= 150) return '#e74c3c';    // Red
+            return '#8e44ad';                       // Purple
+        }
+
+        function applyFilters() {
+            const priceFilter = document.getElementById('priceFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const locationFilter = document.getElementById('locationFilter').value;
+
+            let filteredProperties = allProperties;
+
+            // Apply price filter
+            if (priceFilter !== 'all') {
+                const [min, max] = priceFilter.split('-').map(p => p.replace('+', ''));
+                filteredProperties = filteredProperties.filter(property => {
+                    if (max) {
+                        return property.price >= parseInt(min) && property.price <= parseInt(max);
+                    } else {
+                        return property.price >= parseInt(min);
+                    }
+                });
+            }
+
+            // Apply type filter
+            if (typeFilter !== 'all') {
+                filteredProperties = filteredProperties.filter(property => 
+                    property.type === typeFilter
+                );
+            }
+
+            // Apply location filter
+            if (locationFilter !== 'all') {
+                filteredProperties = filteredProperties.filter(property => 
+                    property.name === locationFilter
+                );
+            }
+
+            displayProperties(filteredProperties);
+
+            // Show results count
+            const resultCount = filteredProperties.length;
+            if (resultCount === 0) {
+                alert('No properties found matching your criteria. Please adjust your filters.');
+            } else {
+                console.log(`Found ${resultCount} properties matching your criteria.`);
+            }
+        }
+
+        function showLocationInfo(property) {
+            const locationInfo = document.getElementById('locationInfo');
+            const locationName = document.getElementById('locationName');
+            const locationDetails = document.getElementById('locationDetails');
+
+            locationName.textContent = property.name + ' - Property Details';
+            
+            locationDetails.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Property Information</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Price:</strong> ₹${property.price} Lakhs</li>
+                            <li><strong>Type:</strong> ${property.type}</li>
+                            <li><strong>Area:</strong> ${property.sqft} sqft</li>
+                            <li><strong>Price per sqft:</strong> ₹${(property.price * 100000 / property.sqft).toFixed(0)}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Location Insights</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Investment Rating:</strong> ${getInvestmentRating(property.price)}</li>
+                            <li><strong>Market Trend:</strong> ${getMarketTrend()}</li>
+                            <li><strong>Connectivity:</strong> Excellent</li>
+                            <li><strong>Amenities:</strong> Good</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary w-100" onclick="predictSimilar('${property.name}')">
+                                <i class="fas fa-calculator me-2"></i>Predict Similar
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-success w-100" onclick="viewTrends('${property.name}')">
+                                <i class="fas fa-chart-line me-2"></i>View Trends
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            locationInfo.style.display = 'block';
+            locationInfo.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function getInvestmentRating(price) {
+            if (price <= 75) return 'Excellent';
+            if (price <= 125) return 'Good';
+            return 'Premium';
+        }
+
+        function getMarketTrend() {
+            const trends = ['Rising', 'Stable', 'Growing'];
+            return trends[Math.floor(Math.random() * trends.length)];
+        }
+
+        function showLocationDetails(locationName) {
+            window.location.href = `/trends?location=${encodeURIComponent(locationName)}`;
+        }
+
+        function predictSimilar(locationName) {
+            window.location.href = `/predict?location=${encodeURIComponent(locationName)}`;
+        }
+
+        function viewTrends(locationName) {
+            window.location.href = `/trends?location=${encodeURIComponent(locationName)}`;
+        }
+
+        // Add search functionality
+        function searchLocation() {
+            const searchTerm = document.getElementById('locationSearch').value.toLowerCase();
+            const filteredProperties = allProperties.filter(property => 
+                property.name.toLowerCase().includes(searchTerm)
+            );
+            displayProperties(filteredProperties);
+        }
+
+        // Add keyboard shortcut for search
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('locationFilter').focus();
+            }
+        });
+    </script>
+</body>
+</html>

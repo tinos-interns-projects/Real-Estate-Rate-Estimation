@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Calculator - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand, .nav-link {
+            color: #333 !important;
+        }
+        .calculator-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .emi-display {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 1rem 0;
+        }
+        .range-slider {
+            margin: 1rem 0;
+        }
+        .slider-value {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-home me-2"></i>Real Estate AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/predict">Predict Price</a>
+                <a class="nav-link" href="/trends">Market Trends</a>
+                <a class="nav-link" href="/compare">Compare</a>
+                <a class="nav-link active" href="/loan-calculator">Loan Calculator</a>
+                <a class="nav-link" href="/about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">💰 Home Loan Calculator</h1>
+                <p class="lead text-muted">Calculate your EMI and plan your home loan with our advanced calculator</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Calculator Form -->
+            <div class="col-lg-6">
+                <div class="calculator-card">
+                    <h4 class="mb-4">
+                        <i class="fas fa-calculator text-primary me-2"></i>
+                        Loan Details
+                    </h4>
+
+                    <form id="loanForm">
+                        <!-- Loan Amount -->
+                        <div class="mb-4">
+                            <label class="form-label d-flex justify-content-between">
+                                <span><i class="fas fa-rupee-sign me-2"></i>Loan Amount</span>
+                                <span class="slider-value" id="principalValue">₹50,00,000</span>
+                            </label>
+                            <input type="range" class="form-range range-slider" id="principal" 
+                                   min="500000" max="20000000" step="100000" value="5000000"
+                                   oninput="updateSliderValue('principal', 'principalValue', '₹')">
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>₹5L</span>
+                                <span>₹2Cr</span>
+                            </div>
+                        </div>
+
+                        <!-- Interest Rate -->
+                        <div class="mb-4">
+                            <label class="form-label d-flex justify-content-between">
+                                <span><i class="fas fa-percentage me-2"></i>Interest Rate (Annual)</span>
+                                <span class="slider-value" id="rateValue">8.5%</span>
+                            </label>
+                            <input type="range" class="form-range range-slider" id="rate" 
+                                   min="6" max="15" step="0.1" value="8.5"
+                                   oninput="updateSliderValue('rate', 'rateValue', '', '%')">
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>6%</span>
+                                <span>15%</span>
+                            </div>
+                        </div>
+
+                        <!-- Loan Tenure -->
+                        <div class="mb-4">
+                            <label class="form-label d-flex justify-content-between">
+                                <span><i class="fas fa-calendar-alt me-2"></i>Loan Tenure</span>
+                                <span class="slider-value" id="tenureValue">20 Years</span>
+                            </label>
+                            <input type="range" class="form-range range-slider" id="tenure" 
+                                   min="5" max="30" step="1" value="20"
+                                   oninput="updateSliderValue('tenure', 'tenureValue', '', ' Years')">
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>5 Years</span>
+                                <span>30 Years</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-lg w-100" onclick="calculateEMI()">
+                            <i class="fas fa-calculator me-2"></i>Calculate EMI
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Additional Costs -->
+                <div class="calculator-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-plus-circle text-warning me-2"></i>
+                        Additional Costs
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">Processing Fee</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" id="processingFee" value="25000">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Insurance</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" id="insurance" value="15000">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Registration</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" id="registration" value="200000">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Other Charges</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" id="otherCharges" value="50000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="col-lg-6">
+                <div class="result-card" id="resultCard" style="display: none;">
+                    <h4><i class="fas fa-chart-line me-2"></i>EMI Calculation</h4>
+                    <div class="emi-display" id="emiAmount">₹0</div>
+                    <p class="mb-4">Monthly EMI</p>
+                    
+                    <div class="breakdown-item">
+                        <span>Principal Amount:</span>
+                        <span id="principalAmount">₹0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Total Interest:</span>
+                        <span id="totalInterest">₹0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Total Amount:</span>
+                        <span id="totalAmount">₹0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Additional Costs:</span>
+                        <span id="additionalCosts">₹0</span>
+                    </div>
+                </div>
+
+                <!-- EMI Breakdown Chart -->
+                <div class="chart-container" id="chartContainer" style="display: none;">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        EMI Breakdown
+                    </h5>
+                    <canvas id="emiChart" width="400" height="300"></canvas>
+                </div>
+
+                <!-- Amortization Schedule -->
+                <div class="calculator-card" id="scheduleContainer" style="display: none;">
+                    <h5 class="mb-3">
+                        <i class="fas fa-table text-success me-2"></i>
+                        Yearly Breakdown
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Principal</th>
+                                    <th>Interest</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheduleTable">
+                                <!-- Schedule will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Tips -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="calculator-card">
+                    <h5 class="mb-4">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Home Loan Tips
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>💡 Smart Tips</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Compare interest rates from multiple banks
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Maintain a good credit score (750+)
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Consider shorter tenure to save on interest
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Make prepayments when possible
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>📋 Required Documents</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-file text-primary me-2"></i>
+                                    Income proof (salary slips, ITR)
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-file text-primary me-2"></i>
+                                    Identity and address proof
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-file text-primary me-2"></i>
+                                    Property documents
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-file text-primary me-2"></i>
+                                    Bank statements (6 months)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let emiChart = null;
+
+        function updateSliderValue(sliderId, valueId, prefix = '', suffix = '') {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(valueId);
+            let value = parseFloat(slider.value);
+            
+            if (sliderId === 'principal') {
+                value = formatCurrency(value);
+            } else {
+                value = value.toLocaleString();
+            }
+            
+            valueDisplay.textContent = prefix + value + suffix;
+            
+            // Auto-calculate if all values are set
+            if (document.getElementById('resultCard').style.display === 'block') {
+                calculateEMI();
+            }
+        }
+
+        function formatCurrency(amount) {
+            if (amount >= 10000000) {
+                return (amount / 10000000).toFixed(1) + ' Cr';
+            } else if (amount >= 100000) {
+                return (amount / 100000).toFixed(0) + ' L';
+            } else {
+                return amount.toLocaleString();
+            }
+        }
+
+        async function calculateEMI() {
+            const principal = parseFloat(document.getElementById('principal').value);
+            const rate = parseFloat(document.getElementById('rate').value);
+            const tenure = parseFloat(document.getElementById('tenure').value);
+
+            try {
+                const response = await fetch('/api/loan-calculator', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        principal: principal,
+                        rate: rate,
+                        tenure: tenure
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data);
+                    createChart(data);
+                    generateSchedule(data);
+                } else {
+                    alert('Error calculating EMI: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('emiAmount').textContent = data.formatted_emi;
+            document.getElementById('principalAmount').textContent = '₹' + data.principal.toLocaleString();
+            document.getElementById('totalInterest').textContent = '₹' + data.total_interest.toLocaleString();
+            document.getElementById('totalAmount').textContent = '₹' + data.total_amount.toLocaleString();
+            
+            // Calculate additional costs
+            const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
+            const insurance = parseFloat(document.getElementById('insurance').value) || 0;
+            const registration = parseFloat(document.getElementById('registration').value) || 0;
+            const otherCharges = parseFloat(document.getElementById('otherCharges').value) || 0;
+            const additionalCosts = processingFee + insurance + registration + otherCharges;
+            
+            document.getElementById('additionalCosts').textContent = '₹' + additionalCosts.toLocaleString();
+
+            document.getElementById('resultCard').style.display = 'block';
+            document.getElementById('chartContainer').style.display = 'block';
+            document.getElementById('scheduleContainer').style.display = 'block';
+        }
+
+        function createChart(data) {
+            const ctx = document.getElementById('emiChart').getContext('2d');
+            
+            if (emiChart) {
+                emiChart.destroy();
+            }
+
+            emiChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Principal', 'Interest'],
+                    datasets: [{
+                        data: [data.principal, data.total_interest],
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateSchedule(data) {
+            const tableBody = document.getElementById('scheduleTable');
+            const principal = data.principal;
+            const monthlyRate = (parseFloat(document.getElementById('rate').value) / 100) / 12;
+            const tenure = parseFloat(document.getElementById('tenure').value);
+            const emi = data.emi;
+            
+            let balance = principal;
+            let html = '';
+            
+            for (let year = 1; year <= tenure; year++) {
+                let yearlyPrincipal = 0;
+                let yearlyInterest = 0;
+                
+                for (let month = 1; month <= 12 && balance > 0; month++) {
+                    const interestPayment = balance * monthlyRate;
+                    const principalPayment = Math.min(emi - interestPayment, balance);
+                    
+                    yearlyPrincipal += principalPayment;
+                    yearlyInterest += interestPayment;
+                    balance -= principalPayment;
+                }
+                
+                html += `
+                    <tr>
+                        <td>${year}</td>
+                        <td>₹${yearlyPrincipal.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                        <td>₹${yearlyInterest.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                        <td>₹${balance.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                    </tr>
+                `;
+                
+                if (balance <= 0) break;
+            }
+            
+            tableBody.innerHTML = html;
+        }
+
+        // Initialize with default calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateEMI();
+        });
+    </script>
+</body>
+</html>

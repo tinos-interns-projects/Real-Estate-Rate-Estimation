@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Rental Property - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .rental-form-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin: 2rem 0;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .form-section h5 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .image-upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .image-upload-area:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+        
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .image-preview-item {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .image-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px;
+            font-size: 10px;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .amenity-checkbox {
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .amenity-checkbox:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .amenity-checkbox input[type="checkbox"] {
+            display: none;
+        }
+        
+        .amenity-checkbox input[type="checkbox"]:checked + label {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="rental-form-container">
+                    <div class="form-header">
+                        <h2><i class="fas fa-home me-2"></i>List Your Rental Property</h2>
+                        <p class="mb-0">Add your property for rent and reach thousands of potential tenants</p>
+                    </div>
+                    
+                    <div class="p-4">
+                        <form id="rentalPropertyForm" enctype="multipart/form-data">
+                            <!-- Basic Information -->
+                            <div class="form-section">
+                                <h5><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Property Type *</label>
+                                        <select class="form-select" name="property_type" required>
+                                            <option value="">Select Property Type</option>
+                                            <option value="Apartment">Apartment</option>
+                                            <option value="Independent House">Independent House</option>
+                                            <option value="Villa">Villa</option>
+                                            <option value="Studio">Studio</option>
+                                            <option value="Penthouse">Penthouse</option>
+                                            <option value="Duplex">Duplex</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Location *</label>
+                                        <input type="text" class="form-control" name="location" placeholder="Enter location" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Size *</label>
+                                        <select class="form-select" name="size" required>
+                                            <option value="">Select Size</option>
+                                            <option value="1 RK">1 RK</option>
+                                            <option value="1 BHK">1 BHK</option>
+                                            <option value="2 BHK">2 BHK</option>
+                                            <option value="3 BHK">3 BHK</option>
+                                            <option value="4 BHK">4 BHK</option>
+                                            <option value="5+ BHK">5+ BHK</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Total Sqft</label>
+                                        <input type="number" class="form-control" name="total_sqft" placeholder="Square feet">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Bedrooms</label>
+                                        <input type="number" class="form-control" name="bedrooms" min="0" max="10">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Bathrooms</label>
+                                        <input type="number" class="form-control" name="bathrooms" min="0" max="10">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Balcony</label>
+                                        <input type="number" class="form-control" name="balcony" min="0" max="5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rental Details -->
+                            <div class="form-section">
+                                <h5><i class="fas fa-rupee-sign me-2"></i>Rental Details</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Monthly Rent (₹) *</label>
+                                        <input type="number" class="form-control" name="rent_amount" placeholder="Monthly rent" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Security Deposit (₹)</label>
+                                        <input type="number" class="form-control" name="security_deposit" placeholder="Security deposit">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Maintenance (₹)</label>
+                                        <input type="number" class="form-control" name="maintenance_charges" placeholder="Monthly maintenance">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Available From</label>
+                                        <input type="date" class="form-control" name="available_from">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Lease Duration</label>
+                                        <select class="form-select" name="lease_duration">
+                                            <option value="">Select Duration</option>
+                                            <option value="6 months">6 months</option>
+                                            <option value="1 year">1 year</option>
+                                            <option value="2 years">2 years</option>
+                                            <option value="3+ years">3+ years</option>
+                                            <option value="Flexible">Flexible</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Furnishing Status</label>
+                                        <select class="form-select" name="furnishing_status">
+                                            <option value="">Select Furnishing</option>
+                                            <option value="Fully Furnished">Fully Furnished</option>
+                                            <option value="Semi Furnished">Semi Furnished</option>
+                                            <option value="Unfurnished">Unfurnished</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Features -->
+                            <div class="form-section">
+                                <h5><i class="fas fa-star me-2"></i>Additional Features</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="parking_available" id="parking">
+                                            <label class="form-check-label" for="parking">
+                                                <i class="fas fa-car me-2"></i>Parking Available
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="pet_friendly" id="pets">
+                                            <label class="form-check-label" for="pets">
+                                                <i class="fas fa-paw me-2"></i>Pet Friendly
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amenities -->
+                            <div class="form-section">
+                                <h5><i class="fas fa-list me-2"></i>Amenities</h5>
+                                <div class="row">
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Gym" id="gym">
+                                            <label class="form-check-label" for="gym">Gym</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Swimming Pool" id="pool">
+                                            <label class="form-check-label" for="pool">Swimming Pool</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Security" id="security">
+                                            <label class="form-check-label" for="security">24/7 Security</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Power Backup" id="power">
+                                            <label class="form-check-label" for="power">Power Backup</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Elevator" id="elevator">
+                                            <label class="form-check-label" for="elevator">Elevator</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Garden" id="garden">
+                                            <label class="form-check-label" for="garden">Garden</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Clubhouse" id="clubhouse">
+                                            <label class="form-check-label" for="clubhouse">Clubhouse</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenities" value="Children's Play Area" id="playground">
+                                            <label class="form-check-label" for="playground">Play Area</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Property Images -->
+                            <div class="form-section">
+                                <h5><i class="fas fa-camera me-2"></i>Property Images *</h5>
+                                <p class="text-muted mb-3">Add photos to attract more tenants! Properties with images get 5x more inquiries.</p>
+
+                                <div class="image-upload-area" onclick="document.getElementById('imageInput').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
+                                    <h4 class="text-primary">📸 Upload Property Images</h4>
+                                    <p class="text-muted mb-2">Click here or drag and drop images</p>
+                                    <p class="text-muted"><strong>Supported:</strong> JPG, PNG, JPEG (Max 10 images, 5MB each)</p>
+                                    <input type="file" id="imageInput" name="images" multiple accept="image/*" style="display: none;">
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('imageInput').click()">
+                                            <i class="fas fa-plus me-2"></i>Choose Images
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="imagePreview" class="image-preview"></div>
+
+                                <div id="uploadStatus" class="mt-3" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <span id="uploadStatusText">Ready to upload images...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-section">
+                                <h5><i class="fas fa-edit me-2"></i>Property Description</h5>
+                                <textarea class="form-control" name="description" rows="4" 
+                                         placeholder="Describe your property, nearby amenities, transportation, etc."></textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Rental Property
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Image upload preview
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const preview = document.getElementById('imagePreview');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadStatusText = document.getElementById('uploadStatusText');
+
+            // Clear previous previews
+            preview.innerHTML = '';
+
+            if (files.length > 0) {
+                uploadStatus.style.display = 'block';
+                uploadStatusText.textContent = `Processing ${files.length} image(s)...`;
+
+                let processedCount = 0;
+
+                for (let i = 0; i < files.length && i < 10; i++) {
+                    const file = files[i];
+
+                    // Check file size (5MB limit)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(`Image "${file.name}" is too large. Please use images under 5MB.`);
+                        continue;
+                    }
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        const imageItem = document.createElement('div');
+                        imageItem.className = 'image-preview-item';
+                        imageItem.innerHTML = `
+                            <img src="${e.target.result}" alt="Property Image">
+                            <button type="button" class="remove-image" onclick="removeImage(this)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="image-name">${file.name}</div>
+                        `;
+                        preview.appendChild(imageItem);
+
+                        processedCount++;
+                        if (processedCount === Math.min(files.length, 10)) {
+                            uploadStatusText.textContent = `✅ ${processedCount} image(s) ready to upload!`;
+                            uploadStatus.className = 'mt-3';
+                            uploadStatus.innerHTML = `
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span>✅ ${processedCount} image(s) ready to upload!</span>
+                                </div>
+                            `;
+                        }
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                uploadStatus.style.display = 'none';
+            }
+        });
+
+        function removeImage(button) {
+            button.parentElement.remove();
+        }
+
+        // Form submission
+        document.getElementById('rentalPropertyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            
+            fetch('/list-rental-property', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    window.location.href = '/profile';
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error: ' + error.message);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Rental Property';
+            });
+        });
+    </script>
+</body>
+</html>

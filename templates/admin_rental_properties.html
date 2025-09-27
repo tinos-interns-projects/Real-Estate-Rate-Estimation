@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Rental Properties Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .admin-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .rental-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .rental-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: #d1edff;
+            color: #0c5460;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn-admin {
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success-admin {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+        }
+        
+        .btn-warning-admin {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            border: none;
+            color: white;
+        }
+        
+        .btn-danger-admin {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            border: none;
+            color: white;
+        }
+        
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .rental-images {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .rental-image-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 2px solid #e9ecef;
+        }
+        
+        .amenities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .amenity-tag {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        
+        .filter-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-row {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="admin-container">
+            <div class="admin-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-key me-3"></i>Rental Properties Management</h2>
+                        <p class="mb-0">Manage and approve rental property listings</p>
+                    </div>
+                    <div>
+                        <a href="/admin/dashboard" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4">
+                <!-- Statistics -->
+                <div class="stats-row">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ rentals|length }}</div>
+                                <div class="stat-label">Total Rentals</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ rentals|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                                <div class="stat-label">Pending Approval</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ rentals|selectattr('status', 'equalto', 'approved')|list|length }}</div>
+                                <div class="stat-label">Approved</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ rentals|selectattr('status', 'equalto', 'rejected')|list|length }}</div>
+                                <div class="stat-label">Rejected</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Filter by Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Property Type</label>
+                            <select class="form-select" id="typeFilter">
+                                <option value="">All Types</option>
+                                <option value="Apartment">Apartment</option>
+                                <option value="Independent House">Independent House</option>
+                                <option value="Villa">Villa</option>
+                                <option value="Studio">Studio</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" id="locationFilter" placeholder="Search location">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Owner</label>
+                            <input type="text" class="form-control" id="ownerFilter" placeholder="Search owner">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rental Properties List -->
+                <div id="rentalsList">
+                    {% if rentals %}
+                        {% for rental in rentals %}
+                        <div class="rental-card" 
+                             data-status="{{ rental.status }}" 
+                             data-type="{{ rental.property_type }}" 
+                             data-location="{{ rental.location|lower }}"
+                             data-owner="{{ (rental.full_name or rental.username)|lower }}">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h5 class="mb-1">{{ rental.property_type }} - {{ rental.size }}</h5>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-map-marker-alt me-2"></i>{{ rental.location }}
+                                            </p>
+                                            <p class="text-muted mb-0">
+                                                <i class="fas fa-user me-2"></i>Owner: {{ rental.full_name or rental.username }}
+                                                {% if rental.phone %}
+                                                | <i class="fas fa-phone me-1"></i>{{ rental.phone }}
+                                                {% endif %}
+                                                {% if rental.email %}
+                                                | <i class="fas fa-envelope me-1"></i>{{ rental.email }}
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <span class="status-badge status-{{ rental.status }}">
+                                            {{ rental.status.title() }}
+                                        </span>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <strong>Rent:</strong> ₹{{ "{:,.0f}".format(rental.rent_amount) }}/month<br>
+                                            {% if rental.security_deposit %}
+                                            <strong>Deposit:</strong> ₹{{ "{:,.0f}".format(rental.security_deposit) }}<br>
+                                            {% endif %}
+                                            {% if rental.maintenance_charges %}
+                                            <strong>Maintenance:</strong> ₹{{ "{:,.0f}".format(rental.maintenance_charges) }}<br>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {% if rental.bedrooms %}
+                                            <strong>Bedrooms:</strong> {{ rental.bedrooms }}<br>
+                                            {% endif %}
+                                            {% if rental.bathrooms %}
+                                            <strong>Bathrooms:</strong> {{ rental.bathrooms }}<br>
+                                            {% endif %}
+                                            {% if rental.total_sqft %}
+                                            <strong>Area:</strong> {{ rental.total_sqft }} sqft<br>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    {% if rental.amenities %}
+                                    <div class="amenities-list">
+                                        {% for amenity in rental.amenities %}
+                                        <span class="amenity-tag">{{ amenity }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    {% if rental.description %}
+                                    <p class="text-muted mb-3">{{ rental.description[:200] }}{% if rental.description|length > 200 %}...{% endif %}</p>
+                                    {% endif %}
+
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>Listed: {{ rental.created_at[:10] }}
+                                        {% if rental.available_from %}
+                                        | Available from: {{ rental.available_from }}
+                                        {% endif %}
+                                        {% if rental.lease_duration %}
+                                        | Lease: {{ rental.lease_duration }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    {% if rental.images %}
+                                    <div class="rental-images mb-3">
+                                        {% for image in rental.images[:3] %}
+                                        <img src="{{ image }}" alt="Property Image" class="rental-image-thumb">
+                                        {% endfor %}
+                                        {% if rental.images|length > 3 %}
+                                        <div class="rental-image-thumb d-flex align-items-center justify-content-center bg-light">
+                                            <small>+{{ rental.images|length - 3 }}</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Status Display -->
+                                    <div class="mb-3">
+                                        {% if rental.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark fs-6">
+                                            <i class="fas fa-clock me-1"></i>Pending Approval
+                                        </span>
+                                        {% elif rental.status == 'approved' %}
+                                        <span class="badge bg-success fs-6">
+                                            <i class="fas fa-check-circle me-1"></i>Approved
+                                        </span>
+                                        {% elif rental.status == 'rejected' %}
+                                        <span class="badge bg-danger fs-6">
+                                            <i class="fas fa-times-circle me-1"></i>Rejected
+                                        </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="d-flex flex-column gap-2">
+                                        {% if rental.status == 'pending' %}
+                                        <button class="btn btn-success-admin" onclick="rentalAction('{{ rental.id }}', 'approve')">
+                                            <i class="fas fa-check me-1"></i>Approve Property
+                                        </button>
+                                        <button class="btn btn-warning-admin" onclick="rentalAction('{{ rental.id }}', 'reject')">
+                                            <i class="fas fa-times me-1"></i>Reject Property
+                                        </button>
+                                        {% elif rental.status == 'approved' %}
+                                        <button class="btn btn-warning-admin" onclick="rentalAction('{{ rental.id }}', 'reject')">
+                                            <i class="fas fa-times me-1"></i>Reject Property
+                                        </button>
+                                        {% elif rental.status == 'rejected' %}
+                                        <button class="btn btn-success-admin" onclick="rentalAction('{{ rental.id }}', 'approve')">
+                                            <i class="fas fa-check me-1"></i>Approve Property
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-danger-admin" onclick="rentalAction('{{ rental.id }}', 'delete')">
+                                            <i class="fas fa-trash me-1"></i>Delete Property
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-key fa-4x text-muted mb-3"></i>
+                            <h4>No Rental Properties</h4>
+                            <p class="text-muted">No rental properties have been submitted yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function rentalAction(rentalId, action) {
+            const actionText = action.charAt(0).toUpperCase() + action.slice(1);
+            let confirmMessage = `Are you sure you want to ${action} this rental property?`;
+
+            if (action === 'delete') {
+                confirmMessage = 'Are you sure you want to delete this rental property? This action cannot be undone.';
+            }
+
+            if (confirm(confirmMessage)) {
+                // Show loading state
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+                button.disabled = true;
+
+                const formData = new FormData();
+                formData.append('action', action);
+
+                fetch(`/admin/rental-properties/${rentalId}/action`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers.get('content-type'));
+
+                    if (response.status === 200) {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        } else {
+                            throw new Error('Server returned HTML instead of JSON. Please check admin authentication.');
+                        }
+                    } else {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + data.error);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Action error:', error);
+                    alert('❌ Error: ' + error.message);
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+            }
+        }
+
+        // Filter functionality
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value.toLowerCase();
+            const locationFilter = document.getElementById('locationFilter').value.toLowerCase();
+            const ownerFilter = document.getElementById('ownerFilter').value.toLowerCase();
+            
+            const rentalCards = document.querySelectorAll('.rental-card');
+            let visibleCount = 0;
+            
+            rentalCards.forEach(card => {
+                const status = card.dataset.status;
+                const type = card.dataset.type.toLowerCase();
+                const location = card.dataset.location;
+                const owner = card.dataset.owner;
+                
+                let show = true;
+                
+                if (statusFilter && status !== statusFilter) show = false;
+                if (typeFilter && type !== typeFilter) show = false;
+                if (locationFilter && !location.includes(locationFilter)) show = false;
+                if (ownerFilter && !owner.includes(ownerFilter)) show = false;
+                
+                card.style.display = show ? 'block' : 'none';
+                if (show) visibleCount++;
+            });
+        }
+
+        // Real-time filtering
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('typeFilter').addEventListener('change', applyFilters);
+        document.getElementById('locationFilter').addEventListener('input', applyFilters);
+        document.getElementById('ownerFilter').addEventListener('input', applyFilters);
+    </script>
+</body>
+</html>

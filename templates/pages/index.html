@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}Real Estate AI - Smart Property Price Predictions{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section particles" data-aos="fade-in">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6 hero-content">
+                <h1 class="display-4 fw-bold mb-4 text-gradient animate-fade-in-up">
+                    🏠 Smart Real Estate Predictions
+                </h1>
+                <p class="lead mb-4 animate-fade-in-up animate-delay-1">
+                    Harness the power of AI to predict property prices, analyze market trends, and make informed real estate decisions in Bangalore.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-4 animate-fade-in-up animate-delay-2">
+                    <a href="{{ url_for('main.predict_page') }}" class="btn btn-primary btn-lg hover-lift">
+                        <i class="fas fa-calculator me-2"></i>Predict Price
+                    </a>
+                    <a href="{{ url_for('main.trends_page') }}" class="btn btn-outline-light btn-lg hover-lift">
+                        <i class="fas fa-chart-line me-2"></i>Market Trends
+                    </a>
+                </div>
+                <div class="row text-center animate-fade-in-up animate-delay-3">
+                    <div class="col-4">
+                        <div class="stats-number counter" data-target="13320">0</div>
+                        <div class="stats-label">Properties</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stats-number counter" data-target="242">0</div>
+                        <div class="stats-label">Locations</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stats-number counter" data-target="95" data-suffix="%">0%</div>
+                        <div class="stats-label">Accuracy</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center animate-fade-in-right">
+                <div class="hero-image animate-float">
+                    <i class="fas fa-home" style="font-size: 15rem; color: rgba(255,255,255,0.1);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-3 animate-on-scroll">🚀 Powerful Features</h2>
+                <p class="lead text-muted animate-on-scroll">Everything you need for smart real estate decisions</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6 animate-on-scroll">
+                <div class="feature-card h-100 hover-lift">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4>AI Price Prediction</h4>
+                    <p class="text-muted">Advanced machine learning algorithms predict property prices with 95% accuracy based on location, size, and amenities.</p>
+                    <a href="{{ url_for('main.predict_page') }}" class="btn btn-outline-primary">Try Now</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 animate-on-scroll animate-delay-1">
+                <div class="feature-card h-100 hover-lift">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Market Trends</h4>
+                    <p class="text-muted">Interactive charts showing price trends, growth patterns, and market insights for different locations over time.</p>
+                    <a href="{{ url_for('main.trends_page') }}" class="btn btn-outline-primary">Explore</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 animate-on-scroll animate-delay-2">
+                <div class="feature-card h-100 hover-lift">
+                    <div class="feature-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h4>Property Comparison</h4>
+                    <p class="text-muted">Compare multiple properties side-by-side with detailed analysis of features, prices, and investment potential.</p>
+                    <a href="{{ url_for('main.compare_page') }}" class="btn btn-outline-primary">Compare</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 animate-on-scroll animate-delay-3">
+                <div class="feature-card h-100 hover-lift">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Interactive Maps</h4>
+                    <p class="text-muted">Explore properties on interactive maps with location insights, nearby amenities, and neighborhood analysis.</p>
+                    <a href="{{ url_for('main.map_page') }}" class="btn btn-outline-primary">View Map</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 animate-on-scroll animate-delay-4">
+                <div class="feature-card h-100 hover-lift">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h4>AI Assistant</h4>
+                    <p class="text-muted">Chat with our intelligent assistant for personalized property advice, market insights, and buying guidance.</p>
+                    <a href="{{ url_for('main.chat_page') }}" class="btn btn-outline-primary">Chat Now</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 animate-on-scroll animate-delay-5">
+                <div class="feature-card h-100 hover-lift">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h4>Loan Calculator</h4>
+                    <p class="text-muted">Calculate EMIs, compare loan options, and get personalized financing advice for your property purchase.</p>
+                    <a href="{{ url_for('main.loan_calculator') }}" class="btn btn-outline-primary">Calculate</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Prediction Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 animate-on-scroll">
+                <h2 class="display-6 fw-bold mb-4">🎯 Quick Price Check</h2>
+                <p class="lead mb-4">Get instant property price estimates with our AI-powered prediction tool.</p>
+                
+                <form id="quickPredictForm" class="needs-validation" novalidate>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" id="quickLocation" placeholder="e.g., Whitefield" required>
+                            <div class="invalid-feedback">Please enter a location.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Size</label>
+                            <select class="form-select" id="quickSize" required>
+                                <option value="">Select Size</option>
+                                <option value="1 BHK">1 BHK</option>
+                                <option value="2 BHK">2 BHK</option>
+                                <option value="3 BHK">3 BHK</option>
+                                <option value="4 BHK">4 BHK</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Total Sqft</label>
+                            <input type="number" class="form-control" id="quickSqft" placeholder="1200" min="300" max="10000" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bathrooms</label>
+                            <select class="form-select" id="quickBath" required>
+                                <option value="">Select</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4+</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 btn-ripple">
+                                <i class="fas fa-magic me-2"></i>Get Quick Estimate
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div id="quickResult" class="mt-4" style="display: none;"></div>
+            </div>
+            
+            <div class="col-lg-6 text-center animate-on-scroll">
+                <div class="position-relative">
+                    <canvas id="quickChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4 animate-on-scroll">
+                <div class="stats-card bg-transparent border-light">
+                    <i class="fas fa-home fa-3x mb-3 text-warning"></i>
+                    <div class="stats-number counter text-white" data-target="13320">0</div>
+                    <div class="stats-label text-light">Properties Analyzed</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 animate-on-scroll animate-delay-1">
+                <div class="stats-card bg-transparent border-light">
+                    <i class="fas fa-map-marker-alt fa-3x mb-3 text-warning"></i>
+                    <div class="stats-number counter text-white" data-target="242">0</div>
+                    <div class="stats-label text-light">Locations Covered</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 animate-on-scroll animate-delay-2">
+                <div class="stats-card bg-transparent border-light">
+                    <i class="fas fa-users fa-3x mb-3 text-warning"></i>
+                    <div class="stats-number counter text-white" data-target="5000" data-suffix="+">0+</div>
+                    <div class="stats-label text-light">Happy Users</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 animate-on-scroll animate-delay-3">
+                <div class="stats-card bg-transparent border-light">
+                    <i class="fas fa-chart-line fa-3x mb-3 text-warning"></i>
+                    <div class="stats-number counter text-white" data-target="95" data-suffix="%">0%</div>
+                    <div class="stats-label text-light">Prediction Accuracy</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 animate-on-scroll">
+                <h2 class="display-6 fw-bold mb-4">Ready to Find Your Dream Property?</h2>
+                <p class="lead mb-4">Join thousands of users who trust our AI-powered platform for smart real estate decisions.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{{ url_for('main.predict_page') }}" class="btn btn-primary btn-lg hover-lift">
+                        <i class="fas fa-rocket me-2"></i>Start Predicting
+                    </a>
+                    <a href="{{ url_for('main.buyer_guide') }}" class="btn btn-outline-primary btn-lg hover-lift">
+                        <i class="fas fa-book me-2"></i>Buyer's Guide
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quick prediction form
+    const quickForm = document.getElementById('quickPredictForm');
+    const quickResult = document.getElementById('quickResult');
+    
+    quickForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!quickForm.checkValidity()) {
+            quickForm.classList.add('was-validated');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const formData = {
+                location: document.getElementById('quickLocation').value,
+                size: document.getElementById('quickSize').value,
+                total_sqft: document.getElementById('quickSqft').value,
+                bath: document.getElementById('quickBath').value,
+                area_type: 'Super built-up Area',
+                availability: 'Ready To Move',
+                balcony: 1
+            };
+            
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                quickResult.innerHTML = `
+                    <div class="prediction-result animate-slide-in-up">
+                        <h4>Estimated Price</h4>
+                        <div class="prediction-price">${data.formatted_price}</div>
+                        <p class="prediction-confidence">Confidence: ${data.confidence}</p>
+                        <a href="{{ url_for('main.predict_page') }}" class="btn btn-outline-light">
+                            Get Detailed Analysis
+                        </a>
+                    </div>
+                `;
+                quickResult.style.display = 'block';
+                showToast('Price prediction completed!', 'success');
+            } else {
+                throw new Error(data.error || 'Prediction failed');
+            }
+        } catch (error) {
+            showToast('Error: ' + error.message, 'error');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    // Initialize quick chart
+    initializeQuickChart();
+});
+
+function initializeQuickChart() {
+    const ctx = document.getElementById('quickChart');
+    if (!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['1 BHK', '2 BHK', '3 BHK', '4 BHK', 'Others'],
+            datasets: [{
+                data: [15, 35, 30, 15, 5],
+                backgroundColor: [
+                    '#3498db',
+                    '#2ecc71',
+                    '#f39c12',
+                    '#e74c3c',
+                    '#9b59b6'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Property Distribution by Size'
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

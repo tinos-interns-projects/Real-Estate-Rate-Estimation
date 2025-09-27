@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Admin Dashboard - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .admin-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-navbar .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .admin-navbar .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-navbar .nav-link:hover {
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .admin-card-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            color: rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn-admin {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .btn-danger-admin {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+            color: white;
+        }
+        
+        .activity-item {
+            padding: 1rem;
+            border-bottom: 1px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .admin-header {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .admin-welcome {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .alert-success-admin {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+            color: #28a745;
+            border-left: 4px solid #28a745;
+            border: none;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="navbar navbar-expand-lg admin-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">
+                <i class="fas fa-shield-alt me-2"></i>
+                Admin Panel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="adminNavbar">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/properties">
+                            <i class="fas fa-home me-1"></i>Properties
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/rental-properties">
+                            <i class="fas fa-key me-1"></i>Rental Properties
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">
+                            <i class="fas fa-users me-1"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/analytics">
+                            <i class="fas fa-chart-bar me-1"></i>Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/settings">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>{{ admin_username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin/profile">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="/admin/logs">
+                                <i class="fas fa-list me-2"></i>Activity Logs
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/" target="_blank">
+                                <i class="fas fa-external-link-alt me-2"></i>View Site
+                            </a></li>
+                            <li><a class="dropdown-item" href="/admin/logout">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Welcome Header -->
+        <div class="admin-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="admin-welcome">Welcome back, {{ admin_username }}!</h1>
+                    <p class="admin-subtitle">Here's what's happening with your Real Estate AI system today.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="alert alert-success-admin">
+                        <i class="fas fa-check-circle me-2"></i>
+                        System Status: <strong>Online</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-home stat-icon"></i>
+                    <div class="stat-number">{{ stats.total_properties }}</div>
+                    <div class="stat-label">Total Properties</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-users stat-icon"></i>
+                    <div class="stat-number">{{ stats.total_users }}</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-check-circle stat-icon text-success"></i>
+                    <div class="stat-number">{{ stats.approved_properties }}</div>
+                    <div class="stat-label">Approved Properties</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-clock stat-icon text-warning"></i>
+                    <div class="stat-number">{{ stats.pending_properties }}</div>
+                    <div class="stat-label">Pending Approval</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Statistics Row -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-user-check stat-icon text-primary"></i>
+                    <div class="stat-number">{{ stats.active_users }}</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-user-slash stat-icon text-secondary"></i>
+                    <div class="stat-number">{{ stats.inactive_users }}</div>
+                    <div class="stat-label">Inactive Users</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-rupee-sign stat-icon text-success"></i>
+                    <div class="stat-number">₹{{ "%.1f"|format(stats.revenue_potential) }}L</div>
+                    <div class="stat-label">Total Property Value</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-times-circle stat-icon text-danger"></i>
+                    <div class="stat-number">{{ stats.rejected_properties }}</div>
+                    <div class="stat-label">Rejected Properties</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Admin Controls -->
+            <div class="col-lg-12">
+                <!-- Quick Actions -->
+                <div class="admin-card mb-4">
+                    <div class="admin-card-header">
+                        <i class="fas fa-bolt me-2"></i>Admin Control Panel
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="d-grid gap-2">
+                                    <a href="/admin/properties" class="btn btn-admin">
+                                        <i class="fas fa-home me-2"></i>Manage Properties
+                                    </a>
+                                    <a href="/admin/users" class="btn btn-admin">
+                                        <i class="fas fa-users me-2"></i>Manage Users
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-grid gap-2">
+                                    <a href="/admin/analytics" class="btn btn-admin">
+                                        <i class="fas fa-chart-bar me-2"></i>View Analytics
+                                    </a>
+                                    <a href="/admin/settings" class="btn btn-admin">
+                                        <i class="fas fa-cog me-2"></i>System Settings
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-danger-admin" onclick="clearSystemCache()">
+                                        <i class="fas fa-trash me-2"></i>Clear Cache
+                                    </button>
+                                    <button class="btn btn-danger-admin" onclick="exportData()">
+                                        <i class="fas fa-download me-2"></i>Export Data
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-grid gap-2">
+                                    <a href="/" target="_blank" class="btn btn-admin">
+                                        <i class="fas fa-external-link-alt me-2"></i>View Site
+                                    </a>
+                                    <a href="/admin/logout" class="btn btn-danger-admin">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <!-- Property Distribution Chart -->
+                        <div class="chart-container">
+                            <h5 class="mb-3">
+                                <i class="fas fa-chart-pie text-primary me-2"></i>
+                                Property Distribution by Type
+                            </h5>
+                            <canvas id="propertyTypeChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <!-- Location Distribution Chart -->
+                        <div class="chart-container">
+                            <h5 class="mb-3">
+                                <i class="fas fa-map-marker-alt text-success me-2"></i>
+                                Top Locations
+                            </h5>
+                            <canvas id="locationChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-clock me-2"></i>Recent Admin Activity
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-clock me-2"></i>Recent Admin Activity
+                    </div>
+                    <div class="card-body p-0">
+                        {% if recent_logs %}
+                            {% for log in recent_logs %}
+                            <div class="activity-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ log.action }}</strong>
+                                        <div class="activity-time">{{ log.timestamp }}</div>
+                                    </div>
+                                    <span class="badge bg-primary">{{ log.admin_id.split('_')[0] }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="activity-item text-center text-muted">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No recent activity - Start managing your system!
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        function initializeCharts() {
+            try {
+                // Property Type Chart
+                const propertyTypeCtx = document.getElementById('propertyTypeChart');
+                if (propertyTypeCtx) {
+                    const propertyTypes = {{ stats.property_types | tojson }};
+
+                    new Chart(propertyTypeCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(propertyTypes),
+                            datasets: [{
+                                data: Object.values(propertyTypes),
+                                backgroundColor: [
+                                    'rgba(102, 126, 234, 0.8)',
+                                    'rgba(118, 75, 162, 0.8)',
+                                    'rgba(52, 152, 219, 0.8)',
+                                    'rgba(46, 204, 113, 0.8)',
+                                    'rgba(241, 196, 15, 0.8)'
+                                ],
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Location Chart
+                const locationCtx = document.getElementById('locationChart');
+                if (locationCtx) {
+                    const locations = {{ stats.location_distribution | tojson }};
+                    const topLocations = Object.entries(locations)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10);
+
+                    new Chart(locationCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: topLocations.map(item => item[0]),
+                            datasets: [{
+                                label: 'Properties',
+                                data: topLocations.map(item => item[1]),
+                                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                                borderColor: 'rgba(102, 126, 234, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing charts:', error);
+            }
+        }
+
+        function clearSystemCache() {
+            if (confirm('Are you sure you want to clear the system cache? This action cannot be undone.')) {
+                alert('System cache cleared successfully!');
+                // Add actual cache clearing logic here
+            }
+        }
+
+        function exportData() {
+            if (confirm('Export all system data? This may take a few moments.')) {
+                alert('Data export initiated! You will receive a download link shortly.');
+                // Add actual export logic here
+            }
+        }
+
+        // Auto-refresh dashboard every 5 minutes
+        setInterval(function() {
+            location.reload();
+        }, 300000);
+    </script>
+</body>
+</html>

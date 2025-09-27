@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Analytics - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .admin-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-navbar .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .admin-navbar .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-navbar .nav-link:hover {
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        
+        .analytics-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .analytics-card-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            color: rgba(102, 126, 234, 0.2);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .admin-header {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .admin-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .activity-item {
+            padding: 1rem;
+            border-bottom: 1px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="navbar navbar-expand-lg admin-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">
+                <i class="fas fa-shield-alt me-2"></i>
+                Admin Panel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="adminNavbar">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/properties">
+                            <i class="fas fa-home me-1"></i>Properties
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">
+                            <i class="fas fa-users me-1"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/analytics">
+                            <i class="fas fa-chart-bar me-1"></i>Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/settings">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>{{ admin_username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin/logout">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="admin-title">Analytics Dashboard</h1>
+                    <p class="admin-subtitle">Comprehensive insights and analytics for your Real Estate AI platform.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-primary fs-6">{{ analytics.total_properties }} Total Properties</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <i class="fas fa-home stat-icon"></i>
+                    <div class="stat-number">{{ analytics.total_properties }}</div>
+                    <div class="stat-label">Total Properties</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <i class="fas fa-chart-line stat-icon"></i>
+                    <div class="stat-number">₹{{ "%.1f"|format(analytics.price_analytics.avg_price) }}L</div>
+                    <div class="stat-label">Average Price</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <i class="fas fa-arrow-up stat-icon"></i>
+                    <div class="stat-number">₹{{ "%.1f"|format(analytics.price_analytics.max_price) }}L</div>
+                    <div class="stat-label">Highest Price</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <i class="fas fa-arrow-down stat-icon"></i>
+                    <div class="stat-number">₹{{ "%.1f"|format(analytics.price_analytics.min_price) }}L</div>
+                    <div class="stat-label">Lowest Price</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Charts Section -->
+            <div class="col-lg-8">
+                <!-- Property Type Distribution -->
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        Property Type Distribution
+                    </h5>
+                    <canvas id="propertyTypeChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Location Distribution -->
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-map-marker-alt text-success me-2"></i>
+                        Top Locations
+                    </h5>
+                    <canvas id="locationChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Monthly Listings Trend -->
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-calendar text-info me-2"></i>
+                        Monthly Listings Trend
+                    </h5>
+                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Sidebar Analytics -->
+            <div class="col-lg-4">
+                <!-- Price Range Distribution -->
+                <div class="analytics-card">
+                    <div class="analytics-card-header">
+                        <i class="fas fa-money-bill-wave me-2"></i>Price Range Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ analytics.price_analytics.price_ranges['0-50L'] }}</div>
+                            <div class="metric-label">₹0-50 Lakhs</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">{{ analytics.price_analytics.price_ranges['50-100L'] }}</div>
+                            <div class="metric-label">₹50-100 Lakhs</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">{{ analytics.price_analytics.price_ranges['100L+'] }}</div>
+                            <div class="metric-label">₹100+ Lakhs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Property Status -->
+                <div class="analytics-card">
+                    <div class="analytics-card-header">
+                        <i class="fas fa-tasks me-2"></i>Property Status
+                    </div>
+                    <div class="card-body">
+                        {% for status, count in analytics.property_by_status.items() %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-capitalize">{{ status }}</span>
+                            <span class="badge bg-primary">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="analytics-card">
+                    <div class="analytics-card-header">
+                        <i class="fas fa-clock me-2"></i>Recent Admin Activity
+                    </div>
+                    <div class="card-body p-0">
+                        {% if analytics.recent_activity %}
+                            {% for activity in analytics.recent_activity[-10:] %}
+                            <div class="activity-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ activity.action }}</strong>
+                                        <div class="activity-time">{{ activity.timestamp }}</div>
+                                    </div>
+                                    <span class="badge bg-secondary">{{ activity.admin_id.split('_')[0] if activity.admin_id else 'Admin' }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="activity-item text-center text-muted">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No recent activity
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAnalyticsCharts();
+        });
+
+        function initializeAnalyticsCharts() {
+            try {
+                // Property Type Chart
+                const propertyTypeCtx = document.getElementById('propertyTypeChart');
+                if (propertyTypeCtx) {
+                    const propertyTypes = {{ analytics.property_by_type | tojson }};
+                    
+                    new Chart(propertyTypeCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(propertyTypes),
+                            datasets: [{
+                                data: Object.values(propertyTypes),
+                                backgroundColor: [
+                                    'rgba(102, 126, 234, 0.8)',
+                                    'rgba(118, 75, 162, 0.8)',
+                                    'rgba(52, 152, 219, 0.8)',
+                                    'rgba(46, 204, 113, 0.8)',
+                                    'rgba(241, 196, 15, 0.8)',
+                                    'rgba(231, 76, 60, 0.8)'
+                                ],
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Location Chart
+                const locationCtx = document.getElementById('locationChart');
+                if (locationCtx) {
+                    const locations = {{ analytics.property_by_location | tojson }};
+                    const topLocations = Object.entries(locations)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10);
+
+                    new Chart(locationCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: topLocations.map(item => item[0]),
+                            datasets: [{
+                                label: 'Properties',
+                                data: topLocations.map(item => item[1]),
+                                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                                borderColor: 'rgba(102, 126, 234, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Monthly Listings Chart
+                const monthlyCtx = document.getElementById('monthlyChart');
+                if (monthlyCtx) {
+                    const monthlyData = {{ analytics.monthly_listings | tojson }};
+                    const sortedMonths = Object.entries(monthlyData).sort();
+
+                    new Chart(monthlyCtx, {
+                        type: 'line',
+                        data: {
+                            labels: sortedMonths.map(item => item[0]),
+                            datasets: [{
+                                label: 'Properties Listed',
+                                data: sortedMonths.map(item => item[1]),
+                                borderColor: 'rgba(102, 126, 234, 1)',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing analytics charts:', error);
+            }
+        }
+    </script>
+</body>
+</html>

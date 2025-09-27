@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Real Estate AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .prediction-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-home me-2"></i>Real Estate AI Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/predict">Predict</a>
+                <a class="nav-link" href="/trends">Trends</a>
+                <a class="nav-link" href="/compare">Compare</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-5 fw-bold mb-3">📊 Real Estate Dashboard</h1>
+                <p class="lead text-muted">Comprehensive insights and analytics for your property decisions</p>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-value">{{ dashboard.statistics.total_predictions }}</div>
+                    <div class="metric-label">Total Predictions</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-value">₹{{ "%.1f"|format(dashboard.statistics.avg_price) }}L</div>
+                    <div class="metric-label">Average Price</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-value">{{ locations|length }}</div>
+                    <div class="metric-label">Locations Covered</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-value">{{ dashboard.statistics.market_status }}</div>
+                    <div class="metric-label">Market Status</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Current Property Analysis -->
+            <div class="col-lg-8">
+                {% if dashboard.current_property %}
+                <div class="dashboard-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-home text-primary me-2"></i>
+                        Current Property Analysis
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>{{ dashboard.current_property.location }}</h5>
+                            <p class="text-muted">{{ dashboard.current_property.size }}</p>
+                            <div class="h3 text-primary">₹{{ "%.2f"|format(dashboard.current_property.price) }} Lakhs</div>
+                            <p class="text-muted">₹{{ "%.0f"|format(dashboard.current_property.price_per_sqft) }}/sqft</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Market Comparison</h6>
+                            <div class="mb-2">
+                                <small class="text-muted">vs Market Average</small>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: {{ (dashboard.current_property.price / dashboard.market_data.avg_price * 100)|round }}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Growth Rate: {{ "%.1f"|format(dashboard.market_data.growth_rate) }}%</small>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Investment Rating: {{ dashboard.market_data.investment_rating }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Market Trends Chart -->
+                <div class="dashboard-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-chart-line text-success me-2"></i>
+                        Market Trends
+                    </h4>
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Location Insights -->
+                <div class="dashboard-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-map-marker-alt text-warning me-2"></i>
+                        Location Insights
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="h5 text-primary">{{ dashboard.location_insights.connectivity }}</div>
+                            <small class="text-muted">Connectivity</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="h5 text-success">{{ dashboard.location_insights.amenities }}</div>
+                            <small class="text-muted">Amenities</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="h5 text-warning">{{ dashboard.location_insights.future_prospects }}</div>
+                            <small class="text-muted">Future Prospects</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Recent Predictions -->
+                <div class="dashboard-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-history text-info me-2"></i>
+                        Recent Predictions
+                    </h5>
+                    {% if predictions %}
+                        {% for prediction in predictions %}
+                        <div class="prediction-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ prediction.input_data.location }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ prediction.input_data.size }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold text-primary">{{ prediction.formatted_price }}</div>
+                                    <small class="text-muted">{{ prediction.timestamp[:10] }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No predictions yet. <a href="/predict">Start predicting!</a></p>
+                    {% endif %}
+                </div>
+
+                <!-- Popular Locations -->
+                <div class="dashboard-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-star text-warning me-2"></i>
+                        Popular Locations
+                    </h5>
+                    {% for location in dashboard.statistics.popular_locations %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ location }}</span>
+                        <span class="badge bg-primary">Hot</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-bolt text-danger me-2"></i>
+                        Quick Actions
+                    </h5>
+                    <div class="d-grid gap-2">
+                        <a href="/predict" class="btn btn-primary">
+                            <i class="fas fa-calculator me-2"></i>New Prediction
+                        </a>
+                        <a href="/compare" class="btn btn-success">
+                            <i class="fas fa-balance-scale me-2"></i>Compare Properties
+                        </a>
+                        <a href="/trends" class="btn btn-info">
+                            <i class="fas fa-chart-line me-2"></i>View Trends
+                        </a>
+                        <a href="/chat" class="btn btn-warning">
+                            <i class="fas fa-robot me-2"></i>Ask AI Assistant
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize trends chart
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024', '2025'],
+                datasets: [{
+                    label: 'Average Price (₹ Lakhs)',
+                    data: [85, 88, 95, 105, 112, 118],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Price (₹ Lakhs)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Auto-refresh dashboard every 30 seconds
+        setInterval(function() {
+            // You can add auto-refresh logic here
+            console.log('Dashboard auto-refresh');
+        }, 30000);
+    </script>
+</body>
+</html>

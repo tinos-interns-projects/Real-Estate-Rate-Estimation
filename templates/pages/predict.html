@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Price Prediction - Real Estate AI{% endblock %}
+
+{% block extra_css %}
+<style>
+.prediction-form {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.form-floating {
+    margin-bottom: 1.5rem;
+}
+
+.prediction-result {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 2rem;
+    animation: slideInUp 0.5s ease;
+}
+
+.price-display {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 1rem 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.confidence-meter {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    height: 10px;
+    margin: 1rem 0;
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+.feature-importance {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.location-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestion-item:hover {
+    background: #f8f9fa;
+}
+
+.input-group-text {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold mb-3 animate-fade-in-up">
+                🏠 AI Property Price Prediction
+            </h1>
+            <p class="lead text-muted animate-fade-in-up animate-delay-1">
+                Get accurate property price estimates using advanced machine learning algorithms
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Prediction Form -->
+        <div class="col-lg-8">
+            <div class="prediction-form animate-fade-in-left">
+                <h3 class="mb-4">
+                    <i class="fas fa-calculator text-primary me-2"></i>
+                    Property Details
+                </h3>
+                
+                <form id="predictionForm" class="needs-validation" novalidate>
+                    <div class="row">
+                        <!-- Location -->
+                        <div class="col-md-6">
+                            <div class="form-floating position-relative">
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       placeholder="Location" required autocomplete="off"
+                                       data-bs-toggle="tooltip" data-bs-placement="top" 
+                                       title="Enter the location/area name">
+                                <label for="location">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Location
+                                </label>
+                                <div class="location-suggestions" id="locationSuggestions"></div>
+                                <div class="invalid-feedback">Please enter a valid location.</div>
+                            </div>
+                        </div>
+
+                        <!-- Area Type -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="area_type" name="area_type" required>
+                                    <option value="">Select Area Type</option>
+                                    <option value="Super built-up Area">Super built-up Area</option>
+                                    <option value="Built-up Area">Built-up Area</option>
+                                    <option value="Plot Area">Plot Area</option>
+                                    <option value="Carpet Area">Carpet Area</option>
+                                </select>
+                                <label for="area_type">
+                                    <i class="fas fa-ruler-combined me-2"></i>Area Type
+                                </label>
+                                <div class="invalid-feedback">Please select an area type.</div>
+                            </div>
+                        </div>
+
+                        <!-- Size -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="size" name="size" required>
+                                    <option value="">Select Size</option>
+                                    <option value="1 BHK">1 BHK</option>
+                                    <option value="2 BHK">2 BHK</option>
+                                    <option value="3 BHK">3 BHK</option>
+                                    <option value="4 BHK">4 BHK</option>
+                                    <option value="5 BHK">5 BHK</option>
+                                    <option value="6 Bedroom">6 Bedroom</option>
+                                </select>
+                                <label for="size">
+                                    <i class="fas fa-home me-2"></i>Size (BHK)
+                                </label>
+                                <div class="invalid-feedback">Please select property size.</div>
+                            </div>
+                        </div>
+
+                        <!-- Total Sqft -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="total_sqft" name="total_sqft" 
+                                       placeholder="Total Sqft" min="300" max="10000" required>
+                                <label for="total_sqft">
+                                    <i class="fas fa-expand-arrows-alt me-2"></i>Total Sqft
+                                </label>
+                                <div class="invalid-feedback">Please enter total square feet (300-10000).</div>
+                            </div>
+                        </div>
+
+                        <!-- Bathrooms -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="bath" name="bath" required>
+                                    <option value="">Select Bathrooms</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5+</option>
+                                </select>
+                                <label for="bath">
+                                    <i class="fas fa-bath me-2"></i>Bathrooms
+                                </label>
+                                <div class="invalid-feedback">Please select number of bathrooms.</div>
+                            </div>
+                        </div>
+
+                        <!-- Balconies -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="balcony" name="balcony" required>
+                                    <option value="">Select Balconies</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4+</option>
+                                </select>
+                                <label for="balcony">
+                                    <i class="fas fa-building me-2"></i>Balconies
+                                </label>
+                                <div class="invalid-feedback">Please select number of balconies.</div>
+                            </div>
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="availability" name="availability" required>
+                                    <option value="">Select Availability</option>
+                                    <option value="Ready To Move">Ready To Move</option>
+                                    <option value="Under Construction">Under Construction</option>
+                                </select>
+                                <label for="availability">
+                                    <i class="fas fa-calendar-check me-2"></i>Availability
+                                </label>
+                                <div class="invalid-feedback">Please select availability status.</div>
+                            </div>
+                        </div>
+
+                        <!-- Society -->
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="society" name="society" 
+                                       placeholder="Society/Project Name">
+                                <label for="society">
+                                    <i class="fas fa-building me-2"></i>Society/Project (Optional)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-5 btn-ripple hover-lift">
+                            <i class="fas fa-magic me-2"></i>
+                            <span id="predictBtnText">Predict Price</span>
+                            <div class="spinner-border spinner-border-sm ms-2 d-none" id="predictSpinner"></div>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Prediction Result -->
+                <div id="predictionResult" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="animate-fade-in-right">
+                <!-- Tips Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>Prediction Tips
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Enter accurate location for better results
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Include all amenities and features
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Double-check square footage
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Consider market conditions
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Market Stats -->
+                <div class="card mb-4">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Market Overview
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 mb-3">
+                                <div class="h4 text-primary mb-0">₹112.5L</div>
+                                <small class="text-muted">Avg Price</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="h4 text-success mb-0">242</div>
+                                <small class="text-muted">Locations</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="h4 text-warning mb-0">1,374</div>
+                                <small class="text-muted">Avg Sqft</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="h4 text-info mb-0">95%</div>
+                                <small class="text-muted">Accuracy</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tools me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('main.trends_page') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-chart-line me-2"></i>View Trends
+                            </a>
+                            <a href="{{ url_for('main.compare_page') }}" class="btn btn-outline-success">
+                                <i class="fas fa-balance-scale me-2"></i>Compare Properties
+                            </a>
+                            <a href="{{ url_for('main.loan_calculator') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-calculator me-2"></i>Loan Calculator
+                            </a>
+                            <a href="{{ url_for('main.chat_page') }}" class="btn btn-outline-info">
+                                <i class="fas fa-robot me-2"></i>Ask AI Assistant
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+{% endblock %}

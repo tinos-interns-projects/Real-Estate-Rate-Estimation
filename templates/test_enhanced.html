@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Enhanced Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <style>
+        .property-type-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .property-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .property-type-card.selected {
+            border-color: #0d6efd;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1>Test Enhanced Prediction</h1>
+        
+        <!-- Property Type Selection -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Select Property Type</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="propertyTypeSelector">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Form Container -->
+        <div class="row">
+            <div class="col-12">
+                <div id="dynamicFormContainer" style="display: none;">
+                    <!-- Form will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Container -->
+        <div class="row">
+            <div class="col-12">
+                <div id="predictionResult">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple test implementation
+        class TestDynamicForm {
+            constructor() {
+                this.propertyTypes = {};
+                this.currentPropertyType = null;
+                this.formContainer = document.getElementById('dynamicFormContainer');
+                this.resultContainer = document.getElementById('predictionResult');
+                this.init();
+            }
+            
+            async init() {
+                console.log('Initializing test form...');
+                await this.loadPropertyTypes();
+            }
+            
+            async loadPropertyTypes() {
+                try {
+                    console.log('Loading property types...');
+                    const response = await fetch('/api/property-types');
+                    const data = await response.json();
+                    
+                    console.log('Response:', data);
+                    
+                    if (data.success) {
+                        this.propertyTypes = data.property_types;
+                        console.log('Loaded types:', Object.keys(this.propertyTypes));
+                        this.renderPropertyTypeSelector();
+                    } else {
+                        throw new Error(data.error || 'Failed to load property types');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('propertyTypeSelector').innerHTML = 
+                        '<div class="alert alert-danger">Failed to load property types: ' + error.message + '</div>';
+                }
+            }
+            
+            renderPropertyTypeSelector() {
+                const container = document.getElementById('propertyTypeSelector');
+                
+                let html = '<div class="row g-3">';
+                
+                Object.values(this.propertyTypes).forEach(type => {
+                    html += `
+                        <div class="col-md-4 col-lg-3">
+                            <div class="property-type-card card h-100 cursor-pointer" 
+                                 data-type-id="${type.id}" 
+                                 onclick="testForm.selectPropertyType('${type.id}')">
+                                <div class="card-body text-center">
+                                    <i class="${type.icon || 'fas fa-home'} fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">${type.name}</h6>
+                                    <small class="text-muted">${type.description || ''}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            
+            async selectPropertyType(typeId) {
+                console.log('Selecting property type:', typeId);
+                
+                // Update UI
+                document.querySelectorAll('.property-type-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                const selectedCard = document.querySelector(`[data-type-id="${typeId}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
+                
+                this.currentPropertyType = typeId;
+                
+                // Load form fields
+                try {
+                    const response = await fetch(`/api/property-types/${typeId}/fields`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.renderForm(data.fields, typeId);
+                        this.formContainer.style.display = 'block';
+                    } else {
+                        throw new Error(data.error || 'Failed to load fields');
+                    }
+                } catch (error) {
+                    console.error('Error loading fields:', error);
+                    this.formContainer.innerHTML = 
+                        '<div class="alert alert-warning">Failed to load form fields: ' + error.message + '</div>';
+                    this.formContainer.style.display = 'block';
+                }
+            }
+            
+            renderForm(fields, typeId) {
+                const propertyType = this.propertyTypes[typeId];
+                
+                let html = `
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">${propertyType.name} - Price Prediction</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="testForm" onsubmit="testForm.handleSubmit(event)">
+                                <input type="hidden" name="property_type" value="${typeId}">
+                                <div class="row g-3">
+                `;
+                
+                fields.forEach(field => {
+                    html += `
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="${field.icon || 'fas fa-info'} me-2"></i>
+                                ${field.label}
+                                ${field.required ? '<span class="text-danger">*</span>' : ''}
+                            </label>
+                    `;
+                    
+                    if (field.field_type === 'select') {
+                        html += `<select class="form-select" name="${field.name}" ${field.required ? 'required' : ''}>`;
+                        html += `<option value="">Select ${field.label}</option>`;
+                        if (field.options) {
+                            field.options.forEach(option => {
+                                html += `<option value="${option}">${option}</option>`;
+                            });
+                        }
+                        html += `</select>`;
+                    } else if (field.field_type === 'number') {
+                        html += `<input type="number" class="form-control" name="${field.name}" 
+                                       placeholder="${field.label}" ${field.required ? 'required' : ''}
+                                       ${field.min_value ? 'min="' + field.min_value + '"' : ''}
+                                       ${field.max_value ? 'max="' + field.max_value + '"' : ''}
+                                       ${field.default_value ? 'value="' + field.default_value + '"' : ''}>`;
+                    } else if (field.field_type === 'boolean') {
+                        html += `
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="${field.name}" id="${field.name}">
+                                <label class="form-check-label" for="${field.name}">${field.label}</label>
+                            </div>
+                        `;
+                    } else {
+                        html += `<input type="text" class="form-control" name="${field.name}" 
+                                       placeholder="${field.label}" ${field.required ? 'required' : ''}
+                                       ${field.default_value ? 'value="' + field.default_value + '"' : ''}>`;
+                    }
+                    
+                    html += `</div>`;
+                });
+                
+                html += `
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-magic me-2"></i>Predict Price
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                
+                this.formContainer.innerHTML = html;
+            }
+            
+            async handleSubmit(event) {
+                event.preventDefault();
+                console.log('Form submitted');
+                
+                const formData = new FormData(event.target);
+                const data = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    data[key] = value;
+                }
+                
+                console.log('Form data:', data);
+                
+                try {
+                    const response = await fetch('/api/enhanced-predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    console.log('Prediction result:', result);
+                    
+                    if (result.success) {
+                        this.resultContainer.innerHTML = `
+                            <div class="card mt-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Prediction Result</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center">
+                                        <h2 class="text-primary">${result.formatted_price}</h2>
+                                        <p>Confidence: ${result.confidence}</p>
+                                        <p>Price per sqft: ₹${result.price_per_sqft}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        this.resultContainer.innerHTML = `
+                            <div class="alert alert-danger mt-4">
+                                Error: ${result.error}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Prediction error:', error);
+                    this.resultContainer.innerHTML = `
+                        <div class="alert alert-danger mt-4">
+                            Failed to get prediction: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Initialize when page loads
+        let testForm;
+        document.addEventListener('DOMContentLoaded', function() {
+            testForm = new TestDynamicForm();
+        });
+    </script>
+</body>
+</html>
